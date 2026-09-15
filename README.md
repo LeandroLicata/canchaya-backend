@@ -24,8 +24,8 @@ operación del usuario queda registrada en un log de texto plano.
 
 ## Estado
 
-Hito 0 — Pitch (martes 15 de septiembre de 2026). Repositorio creado y documento de
-pitch entregado en [PITCH.md](PITCH.md). El desarrollo comienza en la clase 2.
+Hito 0 — Pitch (martes 15 de septiembre de 2026). Repositorio creado; el documento
+del pitch se entrega por la plataforma del instituto. El desarrollo comienza en la clase 2.
 
 ## Plan de trabajo
 
