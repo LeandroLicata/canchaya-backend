@@ -24,8 +24,8 @@ operación del usuario queda registrada en un log de texto plano.
 
 ## Estado
 
-Hito 0 — Pitch (martes 15 de septiembre de 2026). Repositorio creado.
-El desarrollo comienza en la clase 2.
+Hito 0 — Pitch (martes 15 de septiembre de 2026). Repositorio creado y documento de
+pitch entregado en [PITCH.md](PITCH.md). El desarrollo comienza en la clase 2.
 
 ## Plan de trabajo
 
@@ -46,18 +46,21 @@ main.py           # Menú principal y flujo de la aplicación
 estructuras.py    # Estructuras de datos del dominio (cola de turnos, historial)
 persistencia.py   # Lectura y escritura de archivos JSON, CSV y TXT
 utils.py          # Validaciones, formateo, búsquedas y ordenamiento
-estadisticas.py   # Cálculo de métricas sobre los turnos (a definir)
+estadisticas.py   # Cálculo de métricas y gráficos sobre los turnos
 tests/            # Pruebas unitarias
 ```
 
 ## Eje de investigación
 
-A definir con el equipo.
+**Opción D — Visualización de datos con matplotlib.** Se generarán gráficos de la
+distribución de atenciones por franja horaria y de la evolución del tiempo de espera,
+exportados como PNG a partir de las estadísticas del sistema.
 
 ## Requisitos
 
 - Python 3.10 o superior
 - Bibliotecas estándar: `json`, `csv`, `datetime`, `os`
+- `matplotlib` (eje de investigación, se instala con `pip install matplotlib`)
 
 ## Créditos de uso de IA
 
