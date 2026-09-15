@@ -36,7 +36,7 @@ del pitch se entrega por la plataforma del instituto. El desarrollo comienza en 
 | 3 | 29/09 | Completar funcionalidades, búsqueda/ordenamiento y estadísticas. |
 | 4 | 06/10 | **Hito 1 – v1.0.** Menú + persistencia + 1 funcionalidad completa. |
 | 5 | 13/10 | Exportación CSV, log TXT, pruebas unitarias y `PROMPTS.md`. |
-| 6 | 20/10 | Refactorización, limpieza, video, README y documentación final. |
+| 6 | 20/10 | Refactorización, limpieza de código, README y documentación final. |
 | 7 | 27/10 | **Hito 2 – Final.** Entrega completa y defensa oral. |
 
 ## Estructura prevista
