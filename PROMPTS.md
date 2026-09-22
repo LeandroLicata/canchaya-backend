@@ -33,32 +33,6 @@ clases posteriores.
 
 ---
 
-**Fecha:** 15/09/2026 | **Herramienta:** Claude (Claude Code) | **Integrante:** Leandro Licata
-
-**Prompt:** "Hacé la documentación que hay que entregar para el Hito 0" y, a continuación,
-"tiene que ser un documento para entregar en Word o PDF según lo que dice la consigna".
-
-**Resultado:** Primero generó el pitch en markdown. Después armó el documento de entrega
-con la biblioteca `python-docx` y lo exportó a PDF desde Word: encabezado institucional,
-tabla de integrantes con responsabilidades, tema, alcance funcional, diseño técnico, eje
-de investigación, plan de trabajo y trazabilidad, todo en una sola página.
-
-**Errores y correcciones durante el trabajo:** (a) la URL del repositorio había quedado en
-gris de 8 pt y como texto plano, perdida al final de un renglón; se rehízo como
-hipervínculo real y más visible, y al agregar ese renglón el documento se pasó a dos
-páginas, por lo que hubo que compactar el espaciado de los títulos para volver a una;
-(b) la docente avisó que el video tutorial no se va a tomar y se quitó del plan de
-trabajo, aunque la consigna lo siga listando.
-
-**Modificaciones:** La IA eligió por su cuenta el eje de investigación (Opción D,
-matplotlib); el equipo revisó esa decisión y la mantuvo. Se decidió además no versionar el
-documento en el repositorio, porque la entrega va por la plataforma del instituto, y
-dejar el repo solo con código y documentación de código.
-
-**Estado:** Documento modificado varias veces antes de la entrega.
-
----
-
 **Fecha:** 22/09/2026 | **Herramienta:** Claude (Claude Code) | **Integrante:** Leandro Licata
 
 **Prompt:** "Este repo ahora va a ser el backend de CanchaYa, proyecto en el que
