@@ -1,5 +1,7 @@
 # Contrato de módulos
 
+**Zonda Bytes** — backend de CanchaYa
+
 Propuesta de división del trabajo para el backend de CanchaYa. Define **qué función
 expone cada módulo, qué recibe y qué devuelve**, para que los cuatro podamos programar en
 paralelo sin pisarnos y sin esperar a que el otro termine.

@@ -1,5 +1,7 @@
 # Registro de uso de IA
 
+**Zonda Bytes** — backend de CanchaYa
+
 Bitácora de los usos significativos de inteligencia artificial en el desarrollo del
 backend de CanchaYa, según el punto 5.2 de la consigna. Cada entrada anota la fecha, la
 herramienta, el prompt, el resultado, las modificaciones que hizo el equipo y el estado
