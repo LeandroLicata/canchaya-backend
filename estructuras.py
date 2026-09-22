@@ -2,15 +2,19 @@
 # y la cola FIFO de lista de espera.
 # [FED] Federico Cabrera.
 #
-# ESQUELETO: las firmas son las acordadas en CONTRATO_MODULOS.md y main.py ya las usa.
-# Cada función devuelve un valor neutro hasta que Federico la implemente.
-# Sin clases: las reservas son diccionarios dentro de una lista.
+# Sin clases: las reservas son diccionarios dentro de una lista (lista_reservas).
+# Este módulo no imprime nada: calcula y devuelve, y main.py decide qué mostrar.
+
+from datetime import datetime
 
 HORARIOS = ("18:00", "19:00", "20:00", "21:00", "22:00")
 
 ESTADO_CONFIRMADA = "confirmada"
 ESTADO_CANCELADA = "cancelada"
 ESTADO_EN_ESPERA = "en_espera"
+
+CAMPOS_EDITABLES = ("jugadores", "comentarios")
+FORMATO_REGISTRO = "%Y-%m-%d %H:%M:%S"
 
 
 def crear_reserva(lista_reservas, datos):
@@ -22,9 +26,28 @@ def crear_reserva(lista_reservas, datos):
     Devuelve:
         El diccionario de la reserva, con id, fecha_registro y estado inicial.
     """
-    # TODO [FED]: id = máximo id existente + 1 (1 si la lista está vacía),
-    # fecha_registro con datetime.now(), estado inicial y motivo_cancelacion vacío.
-    return {}
+    # El id es el máximo existente + 1 y no len() + 1: si algún día se borra una
+    # reserva de la lista, len() repetiría un id que ya se usó.
+    id_maximo = 0
+    for reserva in lista_reservas:
+        if reserva["id"] > id_maximo:
+            id_maximo = reserva["id"]
+
+    return {
+        "id": id_maximo + 1,
+        "nombre_cliente": datos.get("nombre_cliente", ""),
+        "email": datos.get("email", ""),
+        "telefono": datos.get("telefono", ""),
+        "id_complejo": datos.get("id_complejo"),
+        "fecha": datos.get("fecha", ""),
+        "hora": datos.get("hora", ""),
+        "jugadores": datos.get("jugadores", 0),
+        "comentarios": datos.get("comentarios", ""),
+        # Estado provisorio: agregar_reserva() lo confirma o lo pasa a en_espera.
+        "estado": ESTADO_CONFIRMADA,
+        "fecha_registro": datetime.now().strftime(FORMATO_REGISTRO),
+        "motivo_cancelacion": "",
+    }
 
 
 def esta_ocupado(lista_reservas, id_complejo, fecha, hora):
