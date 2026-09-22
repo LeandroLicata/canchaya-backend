@@ -63,6 +63,8 @@ Tomados del sitio, para que backend y frontend hablen de lo mismo:
 - Ranking de complejos más reservados.
 - Porcentaje de reservas canceladas.
 
+Las dos primeras se exportan además como gráficos PNG (ver eje de investigación).
+
 ## Estructura prevista
 
 ```
@@ -70,19 +72,25 @@ main.py           # Menú principal y flujo de la aplicación
 estructuras.py    # Reservas, disponibilidad y lista de espera (cola FIFO)
 persistencia.py   # Lectura y escritura de archivos JSON, CSV y TXT
 utils.py          # Validaciones, formateo, búsquedas y ordenamiento
-estadisticas.py   # Cálculo de métricas sobre las reservas
-api.py            # Endpoints Flask (eje de investigación)
+estadisticas.py   # Cálculo de métricas y gráficos de las reservas
+api.py            # Endpoints Flask (eje complementario)
 datos/            # complejos.json, reservas.json, reportes CSV y log TXT
+graficos/         # Gráficos PNG generados con matplotlib
 tests/            # Pruebas unitarias
 ```
 
 ## Eje de investigación
 
-**Opción C — API propia con Flask.** Se exponen como endpoints al menos dos
-funcionalidades del proyecto (consultar complejos y registrar una reserva), de modo que
-el formulario de CanchaYa pueda dejar de ser una maqueta y enviar los datos a este
-backend. El núcleo del proyecto sigue siendo la aplicación de consola; la API es una
-segunda puerta de entrada a la misma lógica.
+**Opción D — Visualización de datos con matplotlib** *(eje principal)*. Es el eje
+investigado por el equipo y el declarado en el pitch. A partir de las estadísticas se
+generan gráficos exportados como PNG: ocupación por franja horaria e ingresos por
+complejo. Es el que se desarrolla en el informe.
+
+**Opción C — API propia con Flask** *(complemento, si el tiempo lo permite)*. Exponer
+como endpoints dos funcionalidades —consultar complejos y registrar una reserva— para que
+el formulario de CanchaYa deje de ser una maqueta y envíe los datos a este backend. El
+núcleo del proyecto sigue siendo la aplicación de consola; la API es una segunda puerta
+de entrada a la misma lógica.
 
 ## Plan de trabajo
 
@@ -93,14 +101,14 @@ segunda puerta de entrada a la misma lógica.
 | 3 | 29/09 | Disponibilidad, lista de espera, búsquedas, ordenamiento y estadísticas. |
 | 4 | 06/10 | **Hito 1 – v1.0.** Menú + persistencia + 1 funcionalidad completa. |
 | 5 | 13/10 | Exportación CSV, log TXT, pruebas unitarias y `PROMPTS.md`. |
-| 6 | 20/10 | Endpoints Flask, refactorización, limpieza y documentación final. |
+| 6 | 20/10 | Gráficos con matplotlib, endpoints Flask, refactorización y documentación final. |
 | 7 | 27/10 | **Hito 2 – Final.** Entrega completa y defensa oral. |
 
 ## Requisitos
 
 - Python 3.10 o superior
 - Bibliotecas estándar: `json`, `csv`, `datetime`, `os`
-- `flask` (eje de investigación, se instala con `pip install flask`)
+- `matplotlib` (eje principal) y `flask` (eje complementario): `pip install matplotlib flask`
 
 ## Créditos de uso de IA
 
