@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "nombre": "Estadio 5",
+    "zona": "Godoy Cruz",
+    "canchas": 3,
+    "tipo": "sintetica",
+    "precio_hora": 18000
+  },
+  {
+    "id": 2,
+    "nombre": "La Redonda",
+    "zona": "Las Heras",
+    "canchas": 2,
+    "tipo": "techada",
+    "precio_hora": 20000
+  },
+  {
+    "id": 3,
+    "nombre": "Golazo Futbol",
+    "zona": "Guaymallen",
+    "canchas": 4,
+    "tipo": "sintetica",
+    "precio_hora": 17500
+  },
+  {
+    "id": 4,
+    "nombre": "El Potrero",
+    "zona": "Ciudad",
+    "canchas": 2,
+    "tipo": "aire_libre",
+    "precio_hora": 15000
+  },
+  {
+    "id": 5,
+    "nombre": "Mundial F5",
+    "zona": "Maipu",
+    "canchas": 3,
+    "tipo": "sintetica",
+    "precio_hora": 19000
+  },
+  {
+    "id": 6,
+    "nombre": "La Bombonerita",
+    "zona": "Lujan",
+    "canchas": 2,
+    "tipo": "sintetica",
+    "precio_hora": 16500
+  }
+]
