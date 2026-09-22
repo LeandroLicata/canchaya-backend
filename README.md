@@ -6,10 +6,10 @@
 
 Proyecto de **Zonda Bytes**
 
-Proyecto Integrador — Programación I
-Tecnicatura Superior en Desarrollo de Software
-IES 9-008 "Manuel Belgrano" — Ciclo lectivo 2026
-Comisión: 1° Segunda (Martes)
+Proyecto Integrador — Programación I<br>
+Tecnicatura Superior en Desarrollo de Software<br>
+IES 9-008 "Manuel Belgrano" — Ciclo lectivo 2026<br>
+Comisión: 1° 2°
 
 ## Integrantes
 
