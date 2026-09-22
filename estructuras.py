@@ -50,6 +50,20 @@ def crear_reserva(lista_reservas, datos):
     }
 
 
+def es_del_turno(reserva, id_complejo, fecha, hora):
+    """Indica si una reserva corresponde a un turno (complejo, fecha y hora).
+
+    Parámetros:
+        reserva: diccionario de la reserva.
+        id_complejo, fecha (AAAA-MM-DD) y hora (HH:MM) del turno.
+    Devuelve:
+        True si los tres campos coinciden, False si no.
+    """
+    return (reserva["id_complejo"] == id_complejo
+            and reserva["fecha"] == fecha
+            and reserva["hora"] == hora)
+
+
 def esta_ocupado(lista_reservas, id_complejo, fecha, hora):
     """Indica si un turno ya está tomado.
 
@@ -58,8 +72,11 @@ def esta_ocupado(lista_reservas, id_complejo, fecha, hora):
     Devuelve:
         True si hay una reserva confirmada para ese turno, False si no.
     """
-    # TODO [FED]: recorrer la lista y comparar los tres campos.
-    # Solo cuentan las reservas con estado confirmada.
+    for reserva in lista_reservas:
+        # Las canceladas y las que están en espera no ocupan la cancha.
+        if (reserva["estado"] == ESTADO_CONFIRMADA
+                and es_del_turno(reserva, id_complejo, fecha, hora)):
+            return True
     return False
 
 
@@ -71,8 +88,11 @@ def horarios_disponibles(lista_reservas, id_complejo, fecha):
     Devuelve:
         Lista con las horas de HORARIOS que todavía no están ocupadas.
     """
-    # TODO [FED]: recorrer HORARIOS y quedarse con las que no estén ocupadas.
-    return []
+    libres = []
+    for hora in HORARIOS:
+        if not esta_ocupado(lista_reservas, id_complejo, fecha, hora):
+            libres.append(hora)
+    return libres
 
 
 def agregar_reserva(lista_reservas, reserva):
@@ -84,9 +104,14 @@ def agregar_reserva(lista_reservas, reserva):
     Devuelve:
         Tupla (lista_reservas, estado), con estado "confirmada" o "en_espera".
     """
-    # TODO [FED]: consultar esta_ocupado(), fijar el estado de la reserva,
-    # agregarla a la lista y devolver la lista junto con el estado aplicado.
-    return lista_reservas, ESTADO_CONFIRMADA
+    if esta_ocupado(lista_reservas, reserva["id_complejo"],
+                    reserva["fecha"], reserva["hora"]):
+        estado = ESTADO_EN_ESPERA
+    else:
+        estado = ESTADO_CONFIRMADA
+    reserva["estado"] = estado
+    lista_reservas.append(reserva)
+    return lista_reservas, estado
 
 
 def cancelar_reserva(lista_reservas, id_reserva, motivo):
