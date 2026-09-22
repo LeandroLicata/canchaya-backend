@@ -1,4 +1,10 @@
+<p align="center">
+  <img src="assets/logo-zonda-bytes.png" alt="Zonda Bytes" width="420">
+</p>
+
 # CanchaYa — Backend
+
+Proyecto de **Zonda Bytes**
 
 Proyecto Integrador — Programación I
 Tecnicatura Superior en Desarrollo de Software
