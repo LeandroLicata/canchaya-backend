@@ -7,3 +7,10 @@ venv/
 .DS_Store
 Thumbs.db
 ~$*
+
+# Archivos que genera el programa al ejecutarse. Al final del proyecto se versiona
+# una muestra de cada uno como evidencia de los tres formatos obligatorios.
+datos/reservas.json
+datos/reporte_*.csv
+datos/log_operaciones.txt
+graficos/*.png
