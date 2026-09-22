@@ -50,6 +50,21 @@ def crear_reserva(lista_reservas, datos):
     }
 
 
+def buscar_reserva_por_id(lista_reservas, id_reserva):
+    """Busca una reserva por su id.
+
+    Parámetros:
+        lista_reservas e id_reserva a buscar.
+    Devuelve:
+        El diccionario de la reserva (el mismo de la lista, no una copia), o None
+        si no existe.
+    """
+    for reserva in lista_reservas:
+        if reserva["id"] == id_reserva:
+            return reserva
+    return None
+
+
 def es_del_turno(reserva, id_complejo, fecha, hora):
     """Indica si una reserva corresponde a un turno (complejo, fecha y hora).
 
@@ -117,13 +132,36 @@ def agregar_reserva(lista_reservas, reserva):
 def cancelar_reserva(lista_reservas, id_reserva, motivo):
     """Marca una reserva como cancelada y guarda el motivo.
 
+    Sirve tanto para una reserva confirmada como para una que estaba en espera
+    (en ese caso, el cliente sale de la cola).
+
     Parámetros:
         lista_reservas, id_reserva y motivo de la cancelación.
     Devuelve:
-        Tupla (lista_reservas, True) si la canceló, (lista_reservas, False) si no la encontró.
+        Tupla (lista_reservas, True) si la canceló, (lista_reservas, False) si no la
+        encontró o si ya estaba cancelada.
     """
-    # TODO [FED]: buscar por id, cambiar el estado y escribir motivo_cancelacion.
-    return lista_reservas, False
+    reserva = buscar_reserva_por_id(lista_reservas, id_reserva)
+    if reserva is None or reserva["estado"] == ESTADO_CANCELADA:
+        return lista_reservas, False
+    reserva["estado"] = ESTADO_CANCELADA
+    reserva["motivo_cancelacion"] = str(motivo).strip()
+    return lista_reservas, True
+
+
+def valor_valido(campo, valor):
+    """Verifica que el valor nuevo tenga el tipo que corresponde al campo.
+
+    Parámetros:
+        campo: "jugadores" o "comentarios".
+        valor: el valor que se quiere guardar.
+    Devuelve:
+        True si el valor es aceptable para ese campo, False si no.
+    """
+    if campo == "jugadores":
+        # bool es subclase de int en Python: se descarta para que True no cuente como 1.
+        return isinstance(valor, int) and not isinstance(valor, bool) and valor > 0
+    return isinstance(valor, str)
 
 
 def modificar_reserva(lista_reservas, id_reserva, campo, valor):
@@ -134,9 +172,17 @@ def modificar_reserva(lista_reservas, id_reserva, campo, valor):
     Devuelve:
         Tupla (lista_reservas, True) si la modificó, (lista_reservas, False) si no.
     """
-    # TODO [FED]: aceptar solo los campos editables; el horario no se cambia acá,
-    # se cancela la reserva y se hace una nueva.
-    return lista_reservas, False
+    # El horario no se cambia acá: se cancela la reserva y se hace una nueva, así
+    # la disponibilidad y la cola de espera siempre quedan consistentes.
+    if campo not in CAMPOS_EDITABLES or not valor_valido(campo, valor):
+        return lista_reservas, False
+    reserva = buscar_reserva_por_id(lista_reservas, id_reserva)
+    if reserva is None or reserva["estado"] == ESTADO_CANCELADA:
+        return lista_reservas, False
+    if campo == "comentarios":
+        valor = valor.strip()
+    reserva[campo] = valor
+    return lista_reservas, True
 
 
 def siguiente_en_espera(lista_reservas, id_complejo, fecha, hora):
