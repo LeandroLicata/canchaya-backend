@@ -193,9 +193,19 @@ def siguiente_en_espera(lista_reservas, id_complejo, fecha, hora):
     Devuelve:
         El diccionario de la reserva más antigua en espera, o None si no hay ninguna.
     """
-    # TODO [FED]: filtrar las que estén en_espera para ese turno y quedarse con la
-    # de fecha_registro más vieja. Acá es donde la cola funciona como FIFO.
-    return None
+    # Cola FIFO: el primero que llegó es el primero que sale. El orden lo da
+    # fecha_registro; como el formato AAAA-MM-DD HH:MM:SS se puede comparar como
+    # texto, no hace falta convertirlo a datetime. Si dos se registraron en el mismo
+    # segundo, desempata el id, que es autoincremental.
+    primera = None
+    for reserva in lista_reservas:
+        if (reserva["estado"] != ESTADO_EN_ESPERA
+                or not es_del_turno(reserva, id_complejo, fecha, hora)):
+            continue
+        clave = (reserva["fecha_registro"], reserva["id"])
+        if primera is None or clave < (primera["fecha_registro"], primera["id"]):
+            primera = reserva
+    return primera
 
 
 def confirmar_espera(lista_reservas, id_reserva):
@@ -204,7 +214,16 @@ def confirmar_espera(lista_reservas, id_reserva):
     Parámetros:
         lista_reservas e id_reserva de la reserva en espera.
     Devuelve:
-        Tupla (lista_reservas, True) si la confirmó, (lista_reservas, False) si no.
+        Tupla (lista_reservas, True) si la confirmó, (lista_reservas, False) si no
+        existe, si no estaba en espera o si el turno sigue ocupado.
     """
-    # TODO [FED]: verificar que el turno siga libre antes de confirmar.
-    return lista_reservas, False
+    reserva = buscar_reserva_por_id(lista_reservas, id_reserva)
+    if reserva is None or reserva["estado"] != ESTADO_EN_ESPERA:
+        return lista_reservas, False
+    # Se vuelve a verificar acá y no solo en main.py: así nunca puede haber dos
+    # reservas confirmadas para el mismo turno, llame quien llame a esta función.
+    if esta_ocupado(lista_reservas, reserva["id_complejo"],
+                    reserva["fecha"], reserva["hora"]):
+        return lista_reservas, False
+    reserva["estado"] = ESTADO_CONFIRMADA
+    return lista_reservas, True
