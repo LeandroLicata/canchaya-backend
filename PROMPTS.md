@@ -122,3 +122,44 @@ esos tres. Los otros tres están tomados textualmente del HTML.
 **Modificaciones:** _(completar)_
 
 **Estado:** _(completar)_
+
+---
+
+**Fecha:** 22/09/2026 | **Herramienta:** Claude | **Integrante:** Federico Cabrera
+
+**Prompt:** "Necesito completar mi parte (soy Federico Cabrera)" — con el enlace al
+repositorio. La IA leyó `CLAUDE.md`, `CONTRATO_MODULOS.md` y `main.py` para ubicar qué
+módulo me toca y cómo lo usa el resto del programa.
+
+**Resultado:** Implementó las ocho funciones de `estructuras.py` con las firmas del
+contrato, sin cambiar ninguna: `crear_reserva()`, `esta_ocupado()`,
+`horarios_disponibles()`, `agregar_reserva()`, `cancelar_reserva()`,
+`modificar_reserva()`, `siguiente_en_espera()` y `confirmar_espera()`. Agregó tres
+funciones internas para no repetir código: `buscar_reserva_por_id()` (la usan cancelar,
+modificar y confirmar), `es_del_turno()` (la usan `esta_ocupado()` y
+`siguiente_en_espera()`) y `valor_valido()` (controla el tipo del dato en
+`modificar_reserva()`). Generó también `tests/test_estructuras.py` con 9 pruebas
+unitarias con `unittest`.
+
+**Decisiones de diseño que tomó y que hay que poder explicar en la defensa:**
+
+- El id nuevo es el máximo existente + 1 y no `len(lista) + 1`, para no repetir un id si
+  alguna vez se borra una reserva de la lista.
+- La cola FIFO no es una lista aparte: son las reservas con estado `en_espera` de un mismo
+  turno. `siguiente_en_espera()` recorre la lista y se queda con la de `fecha_registro`
+  más vieja, sin usar `sorted()`. La fecha con formato `AAAA-MM-DD HH:MM:SS` se compara
+  como texto; si dos reservas se registraron en el mismo segundo, desempata el id.
+- `confirmar_espera()` vuelve a verificar que el turno esté libre aunque `main.py` ya lo
+  controle, para que nunca haya dos reservas confirmadas en el mismo turno.
+- `cancelar_reserva()` también acepta reservas en espera (el cliente sale de la cola) y
+  devuelve `False` si la reserva ya estaba cancelada.
+- `modificar_reserva()` rechaza tipos incorrectos (por ejemplo `"8"` como texto en
+  `jugadores`) y descarta `True`/`False`, porque en Python `bool` es un tipo de `int`.
+
+**Verificación:** las 9 pruebas pasan (`python -m unittest discover tests`). Se revisó con
+el árbol sintáctico que todas las funciones tengan docstring, que ninguna supere las 40
+líneas (la más larga tiene 26) y que el módulo no use `print()`.
+
+**Modificaciones:** _(completar: qué cambié al leer y probar el código, y por qué.)_
+
+**Estado:** _(completar)_
