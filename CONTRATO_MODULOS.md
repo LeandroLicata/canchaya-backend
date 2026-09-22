@@ -72,7 +72,8 @@ HORARIOS = ("18:00", "19:00", "20:00", "21:00", "22:00")
 
 ## `persistencia.py` — Gonzalo
 
-Constantes que expone: `CARPETA_DATOS`, `RUTA_COMPLEJOS`, `RUTA_RESERVAS`, `RUTA_LOG`.
+Constantes que expone: `CARPETA_DATOS`, `RUTA_COMPLEJOS`, `RUTA_RESERVAS`, `RUTA_LOG`
+y `RUTA_GRAFICO`.
 
 | Función | Devuelve |
 |---|---|
@@ -80,6 +81,7 @@ Constantes que expone: `CARPETA_DATOS`, `RUTA_COMPLEJOS`, `RUTA_RESERVAS`, `RUTA
 | `guardar_json(ruta, datos)` | `True` si pudo guardar, `False` si falló. |
 | `exportar_csv(ruta, encabezados, filas)` | Cantidad de filas escritas, o `0` si falló. `filas` es una lista de listas. |
 | `registrar_log(accion, detalle="")` | `None`. Agrega al `.txt` una línea `AAAA-MM-DD HH:MM:SS \| accion \| detalle`. |
+| `ruta_reporte(fecha)` | La ruta del CSV de ese día: `datos/reporte_AAAA-MM-DD.csv`. |
 
 Todo con bloque `with`. El programa tiene que arrancar aunque no exista ningún archivo.
 
@@ -93,8 +95,10 @@ Todo con bloque `with`. El programa tiene que arrancar aunque no exista ningún 
 | `horarios_disponibles(lista_reservas, id_complejo, fecha)` | Lista de horas libres de `HORARIOS` para ese complejo y fecha. |
 | `cancelar_reserva(lista_reservas, id_reserva, motivo)` | Tupla `(lista_reservas, True/False)`. Pasa el estado a `cancelada` y guarda el motivo. |
 | `siguiente_en_espera(lista_reservas, id_complejo, fecha, hora)` | La primera reserva `en_espera` de ese turno (FIFO, por `fecha_registro`), o `None`. |
+| `modificar_reserva(lista_reservas, id_reserva, campo, valor)` | Tupla `(lista_reservas, True/False)`. Solo se modifican `jugadores` y `comentarios`; para cambiar de horario se cancela y se reserva de nuevo. |
+| `confirmar_espera(lista_reservas, id_reserva)` | Tupla `(lista_reservas, True/False)`. Pasa una reserva de `en_espera` a `confirmada` cuando el turno quedó libre. |
 
-Es el módulo donde vive la **cola FIFO**: al cancelarse una reserva, `main.py` pregunta
+Define además la constante `HORARIOS`. Es el módulo donde vive la **cola FIFO**: al cancelarse una reserva, `main.py` pregunta
 por `siguiente_en_espera()` y le ofrece el lugar.
 
 ## `utils.py` — Gustavo
@@ -103,12 +107,14 @@ por `siguiente_en_espera()` y le ofrece el lugar.
 |---|---|
 | `pedir_texto(mensaje, largo_minimo=3)` | El texto validado. Reintenta hasta que sea válido. |
 | `pedir_entero(mensaje, minimo, maximo)` | El número validado. Captura `ValueError`. |
-| `pedir_opcion(mensaje, opciones)` | El elemento elegido de la lista `opciones`. |
+| `pedir_opcion(mensaje, opciones)` | El elemento elegido de la lista `opciones`, que puede contener textos o números (ids). |
 | `validar_email(texto)` | `True` / `False`. |
-| `validar_fecha(texto)` | `True` / `False`. Formato `AAAA-MM-DD` y que no sea una fecha pasada. |
+| `validar_fecha(texto)` | `True` / `False`. Valida que el formato `AAAA-MM-DD` sea correcto y que la fecha exista. Se usa en las búsquedas, donde sí valen fechas pasadas. |
+| `validar_fecha_reserva(texto)` | `True` / `False`. Lo anterior y además que no sea una fecha pasada. Se usa al registrar. |
 | `buscar_reservas(lista_reservas, campo, valor)` | Lista de las reservas cuyo `campo` coincide (parcial y sin distinguir mayúsculas para textos). |
 | `ordenar_por(lista, campo, descendente=False)` | Lista ordenada. **Algoritmo propio de inserción**, no `sorted()`: suma puntos en la rúbrica. |
 | `formatear_reserva(reserva, lista_complejos)` | Cadena de una línea, lista para imprimir, con el nombre del complejo en vez del id. |
+| `fila_csv(reserva, lista_complejos)` | Lista de valores de la reserva para el CSV, en el orden de los encabezados. |
 
 ## `estadisticas.py` — Gustavo
 
@@ -137,7 +143,7 @@ Solo menú y flujo. Una función por opción, que pide los datos con `utils`, ll
 | Requisito | Estado |
 |---|---|
 | Mínimo 4 módulos | 5 |
-| Mínimo 10 funciones propias | 26 previstas |
+| Mínimo 10 funciones propias | 31 previstas |
 | Al menos 3 funciones por módulo (salvo `main.py`) | Cumple en los cuatro |
 | Menú con 5+ funcionalidades y un submenú | 7 opciones + submenú de consultas |
 | 1 búsqueda con filtro | `buscar_reservas()` |
