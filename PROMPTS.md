@@ -10,6 +10,53 @@ de funciones o resolución de errores en la que haya participado una IA.
 
 ---
 
+**Fecha:** 14/09/2026 | **Herramienta:** Claude (Claude Code) | **Integrante:** Leandro Licata
+
+**Prompt:** "Tengo que crear un repo en GitHub para el proyecto integrador según lo que
+dice `Proyecto_Integrador_1Segunda_Martes.docx`. De momento no hace falta que tenga nada,
+ya que es para el Hito 0. Elegimos el tema Sistema de gestión de turnos."
+
+**Resultado:** Leyó el archivo de la consigna y creó el repositorio público
+`proyecto-integrador-turnos` con un `README.md` (tema, integrantes, descripción, plan de
+trabajo clase por clase con las fechas del cronograma y estructura de módulos prevista) y
+un `.gitignore`. Primer commit del proyecto.
+
+**Modificaciones:** El equipo definió el nombre del repositorio, la visibilidad pública y
+los nombres de los cuatro integrantes. Se contrastaron contra la consigna dos
+observaciones que hizo la IA: que el equipo tiene 4 integrantes cuando se piden de 2 a 3,
+y que faltaba definir el eje de investigación. El README se siguió corrigiendo en las
+clases posteriores.
+
+**Estado:** Se usó como base, modificado varias veces después.
+
+---
+
+**Fecha:** 15/09/2026 | **Herramienta:** Claude (Claude Code) | **Integrante:** Leandro Licata
+
+**Prompt:** "Hacé la documentación que hay que entregar para el Hito 0" y, a continuación,
+"tiene que ser un documento para entregar en Word o PDF según lo que dice la consigna".
+
+**Resultado:** Primero generó el pitch en markdown. Después armó el documento de entrega
+con la biblioteca `python-docx` y lo exportó a PDF desde Word: encabezado institucional,
+tabla de integrantes con responsabilidades, tema, alcance funcional, diseño técnico, eje
+de investigación, plan de trabajo y trazabilidad, todo en una sola página.
+
+**Errores y correcciones durante el trabajo:** (a) la URL del repositorio había quedado en
+gris de 8 pt y como texto plano, perdida al final de un renglón; se rehízo como
+hipervínculo real y más visible, y al agregar ese renglón el documento se pasó a dos
+páginas, por lo que hubo que compactar el espaciado de los títulos para volver a una;
+(b) la docente avisó que el video tutorial no se va a tomar y se quitó del plan de
+trabajo, aunque la consigna lo siga listando.
+
+**Modificaciones:** La IA eligió por su cuenta el eje de investigación (Opción D,
+matplotlib); el equipo revisó esa decisión y la mantuvo. Se decidió además no versionar el
+documento en el repositorio, porque la entrega va por la plataforma del instituto, y
+dejar el repo solo con código y documentación de código.
+
+**Estado:** Documento modificado varias veces antes de la entrega.
+
+---
+
 **Fecha:** 22/09/2026 | **Herramienta:** Claude (Claude Code) | **Integrante:** Leandro Licata
 
 **Prompt:** "Este repo ahora va a ser el backend de CanchaYa, proyecto en el que
@@ -99,8 +146,3 @@ esos tres. Los otros tres están tomados textualmente del HTML.
 **Modificaciones:** _(completar)_
 
 **Estado:** _(completar)_
-
----
-
-_Pendiente: agregar las entradas del 14 y 15 de septiembre, correspondientes a la creación
-del repositorio y a la redacción del documento del Hito 0._
