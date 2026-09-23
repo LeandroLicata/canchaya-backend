@@ -6,6 +6,8 @@
 
 import os
 import json
+import csv
+from datetime import datetime
 
 CARPETA_DATOS = "datos"
 CARPETA_GRAFICOS = "graficos"
@@ -75,9 +77,18 @@ def exportar_csv(ruta, encabezados, filas):
     Devuelve:
         La cantidad de filas escritas, o 0 si falló.
     """
-    # TODO [GON]: csv.writer() dentro de un `with`, con newline="" y encoding utf-8,
-    # capturando IOError.
-    return 0
+    try:
+        carpeta = os.path.dirname(ruta)
+        if carpeta:
+            os.makedirs(carpeta, exist_ok=True)
+        with open(ruta, "w",newline="", encoding="utf-8") as archivo:
+            escritor = csv.writer(archivo)
+            escritor.writerow(encabezados)
+            escritor.writerows(filas)
+        return len(filas)
+    except (IOError, OSError):
+        return 0
+    
 
 
 def registrar_log(accion, detalle=""):
@@ -89,6 +100,13 @@ def registrar_log(accion, detalle=""):
     Devuelve:
         Nada.
     """
-    # TODO [GON]: abrir el TXT en modo "a" dentro de un `with` y escribir
-    # "AAAA-MM-DD HH:MM:SS | accion | detalle" usando datetime.now().
+    try:
+        carpeta = os.path.dirname(RUTA_LOG)
+        if carpeta:
+            os.makedirs(carpeta, exist_ok=True)
+        momento = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        with open(RUTA_LOG, "a", encoding="utf-8") as archivo:
+            archivo.write("{0} | {1} | {2}\n".format(momento, accion, detalle))
+    except (IOError, OSError):
+        pass
     return None
