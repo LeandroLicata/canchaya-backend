@@ -5,6 +5,7 @@
 # Cada función devuelve un valor neutro hasta que Gonzalo la implemente.
 
 import os
+import json
 
 CARPETA_DATOS = "datos"
 CARPETA_GRAFICOS = "graficos"
@@ -34,10 +35,14 @@ def cargar_json(ruta, por_defecto=None):
     Devuelve:
         El contenido del archivo, o por_defecto si no existe o está dañado.
     """
-    # TODO [GON]: abrir con `with`, leer con json.load() y capturar
-    # FileNotFoundError, IOError y JSONDecodeError. Si el archivo no existe,
-    # crearlo con `por_defecto` (la consigna exige que el programa arranque igual).
-    return por_defecto
+    try:
+       with open(ruta, "r", encoding="utf-8") as archivo:
+           return json.load(archivo)
+    except FileNotFoundError:
+       guardar_json(ruta, por_defecto)
+       return por_defecto
+    except (json.JSONDecodeError, IOError, OSError):
+        return por_defecto
 
 
 def guardar_json(ruta, datos):
@@ -49,9 +54,15 @@ def guardar_json(ruta, datos):
     Devuelve:
         True si pudo guardar, False si falló.
     """
-    # TODO [GON]: json.dump() dentro de un `with`, con ensure_ascii=False e indent=2,
-    # capturando IOError. Crear la carpeta si no existe (os.makedirs).
-    return False
+    try:
+        carpeta = os.path.dirname(ruta)
+        if carpeta:
+            os.makedirs(carpeta, exist_ok=True)
+        with open(ruta, "w", encoding="utf-8") as archivo:
+            json.dump(datos, archivo, ensure_ascii=False, indent=2)
+        return True
+    except (IOError, OSError):
+        return False
 
 
 def exportar_csv(ruta, encabezados, filas):
