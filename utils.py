@@ -2,12 +2,14 @@
 # ordenamiento y formateo para pantalla.
 # [GUS] Gustavo Di Paola.
 #
-# ESQUELETO: las firmas son las acordadas en CONTRATO_MODULOS.md y main.py ya las usa.
-#
-# OJO con los valores neutros de este módulo: main.py reintenta la carga de un dato
-# hasta que el validador lo acepta, así que un validador que devuelva siempre False
-# deja el programa en un bucle infinito. Por eso los stubs devuelven el valor que
-# corta el bucle (True / "0"); al implementarlos hay que reemplazarlos.
+# Las firmas son las acordadas en CONTRATO_MODULOS.md.
+# SUPUESTO: cada reserva es un dict con las claves
+#   id, cliente, email, telefono, id_complejo, fecha (AAAA-MM-DD), hora,
+#   jugadores, estado
+# y cada complejo un dict con las claves id y nombre.
+# Si el contrato usa otros nombres, cambiarlos solo en formatear_reserva y fila_csv.
+
+from datetime import datetime, date
 
 
 def pedir_texto(mensaje, largo_minimo=3):
@@ -19,8 +21,11 @@ def pedir_texto(mensaje, largo_minimo=3):
     Devuelve:
         El texto ingresado, sin espacios al principio ni al final.
     """
-    # TODO [GUS]: bucle while con input(), .strip() y mensaje de error claro.
-    return ""
+    while True:
+        texto = input(mensaje).strip()
+        if len(texto) >= largo_minimo:
+            return texto
+        print(f"Error: debe tener al menos {largo_minimo} caracteres.")
 
 
 def pedir_entero(mensaje, minimo, maximo):
@@ -32,9 +37,15 @@ def pedir_entero(mensaje, minimo, maximo):
     Devuelve:
         El número ingresado.
     """
-    # TODO [GUS]: int(input()) dentro de try/except ValueError, más la
-    # comprobación del rango.
-    return minimo
+    while True:
+        try:
+            numero = int(input(mensaje))
+        except ValueError:
+            print("Error: ingresá un número entero.")
+            continue
+        if minimo <= numero <= maximo:
+            return numero
+        print(f"Error: el número debe estar entre {minimo} y {maximo}.")
 
 
 def pedir_opcion(mensaje, opciones):
@@ -46,10 +57,13 @@ def pedir_opcion(mensaje, opciones):
     Devuelve:
         El elemento elegido, del mismo tipo que venía en la lista.
     """
-    # TODO [GUS]: comparar como texto para que sirva igual con ids numéricos,
-    # y devolver el elemento original de la lista.
-    # Devuelve "0" para que el menú de main.py termine mientras sea un stub.
-    return "0"
+    while True:
+        ingreso = input(mensaje).strip()
+        for opcion in opciones:
+            if str(opcion) == ingreso:
+                return opcion
+        validas = ", ".join(str(o) for o in opciones)
+        print(f"Error: opción inválida. Elegí una de: {validas}.")
 
 
 def validar_email(texto):
@@ -60,7 +74,13 @@ def validar_email(texto):
     Devuelve:
         True si es válida, False si no.
     """
-    # TODO [GUS]: exigir un solo "@", algo antes y después, y un "." en el dominio.
+    if " " in texto or texto.count("@") != 1:
+        return False
+    usuario, dominio = texto.split("@")
+    if usuario == "" or dominio == "" or "." not in dominio:
+        return False
+    if dominio.startswith(".") or dominio.endswith("."):
+        return False
     return True
 
 
@@ -74,7 +94,12 @@ def validar_fecha(texto):
     Devuelve:
         True si es válida, False si no.
     """
-    # TODO [GUS]: datetime.strptime(texto, "%Y-%m-%d") dentro de try/except ValueError.
+    if len(texto) != 10:
+        return False
+    try:
+        datetime.strptime(texto, "%Y-%m-%d")
+    except ValueError:
+        return False
     return True
 
 
@@ -86,8 +111,10 @@ def validar_fecha_reserva(texto):
     Devuelve:
         True si es válida y futura (o de hoy), False si no.
     """
-    # TODO [GUS]: reutilizar validar_fecha() y después comparar contra date.today().
-    return True
+    if not validar_fecha(texto):
+        return False
+    fecha = datetime.strptime(texto, "%Y-%m-%d").date()
+    return fecha >= date.today()
 
 
 def buscar_reservas(lista_reservas, campo, valor):
@@ -101,8 +128,18 @@ def buscar_reservas(lista_reservas, campo, valor):
     Devuelve:
         Lista con las reservas encontradas (vacía si no hay ninguna).
     """
-    # TODO [GUS]: recorrer la lista y comparar segun el tipo del valor.
-    return []
+    encontradas = []
+    for reserva in lista_reservas:
+        if campo not in reserva:
+            continue
+        actual = reserva[campo]
+        if isinstance(valor, str) and isinstance(actual, str):
+            coincide = valor.lower() in actual.lower()
+        else:
+            coincide = actual == valor
+        if coincide:
+            encontradas.append(reserva)
+    return encontradas
 
 
 def ordenar_por(lista, campo, descendente=False):
@@ -115,9 +152,29 @@ def ordenar_por(lista, campo, descendente=False):
     Devuelve:
         Una lista nueva, ordenada. No modifica la original.
     """
-    # TODO [GUS]: algoritmo de inserción escrito a mano, no sorted().
-    # La consigna valora el algoritmo propio.
-    return lista
+    resultado = list(lista)
+    for i in range(1, len(resultado)):
+        actual = resultado[i]
+        j = i - 1
+        while j >= 0:
+            if descendente:
+                debe_moverse = resultado[j][campo] < actual[campo]
+            else:
+                debe_moverse = resultado[j][campo] > actual[campo]
+            if not debe_moverse:
+                break
+            resultado[j + 1] = resultado[j]
+            j -= 1
+        resultado[j + 1] = actual
+    return resultado
+
+
+def _nombre_complejo(id_complejo, lista_complejos):
+    """Devuelve el nombre del complejo, o '?' si no se encuentra el id."""
+    for complejo in lista_complejos:
+        if complejo["id"] == id_complejo:
+            return complejo["nombre"]
+    return "?"
 
 
 def formatear_reserva(reserva, lista_complejos):
@@ -129,8 +186,10 @@ def formatear_reserva(reserva, lista_complejos):
     Devuelve:
         Una cadena de una sola línea, lista para imprimir.
     """
-    # TODO [GUS]: por ejemplo "#3 25/09 20:00 — Estadio 5 — Lionel Pérez (confirmada)".
-    return ""
+    nombre = _nombre_complejo(reserva["id_complejo"], lista_complejos)
+    anio, mes, dia = reserva["fecha"].split("-")
+    return (f"#{reserva['id']} {dia}/{mes} {reserva['hora']} — {nombre} — "
+            f"{reserva['cliente']} ({reserva['estado']})")
 
 
 def fila_csv(reserva, lista_complejos):
@@ -143,5 +202,14 @@ def fila_csv(reserva, lista_complejos):
         Lista de valores en el orden de los encabezados definidos en main.py:
         id, cliente, email, telefono, complejo, hora, jugadores, estado.
     """
-    # TODO [GUS]: devolver los valores en ese orden exacto.
-    return []
+    nombre = _nombre_complejo(reserva["id_complejo"], lista_complejos)
+    return [
+        reserva["id"],
+        reserva["cliente"],
+        reserva["email"],
+        reserva["telefono"],
+        nombre,
+        reserva["hora"],
+        reserva["jugadores"],
+        reserva["estado"],
+    ]
