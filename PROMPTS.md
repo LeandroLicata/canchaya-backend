@@ -63,10 +63,16 @@ cuatro integrantes sin pisarnos.
 módulos, los dos diccionarios compartidos (`complejo` y `reserva`), seis reglas de
 convención y una tabla de control contra los requisitos de la consigna.
 
-**Modificaciones:** _(completar: revisar si las firmas propuestas son las que el equipo
-acepta, y anotar qué se cambió después de hablar con Federico, Gonzalo y Gustavo.)_
+**Modificaciones:** El contrato se corrigió dos veces sobre la marcha. Al escribir
+`main.py` aparecieron cinco cosas que faltaban (`modificar_reserva()`, `confirmar_espera()`,
+`ruta_reporte()`, `fila_csv()` y la constante `RUTA_GRAFICO`) y `validar_fecha()` se partió
+en dos, porque rechazaba fechas pasadas y eso rompía la búsqueda en el historial. Después
+se lo pasé al equipo: Federico y Gonzalo implementaron sus módulos respetando las firmas
+sin pedir cambios. Federico agregó tres funciones auxiliares internas
+(`buscar_reserva_por_id()`, `es_del_turno()` y `valor_valido()`) que no estaban previstas.
 
-**Estado:** _(completar)_
+**Estado:** En uso como referencia del equipo. Queda pendiente sumarle las funciones
+auxiliares de Federico.
 
 ---
 
@@ -92,10 +98,16 @@ y 7 del menú no se podían implementar. El contrato se actualizó.
 tuvieran docstring, que ninguna superara las 40 líneas (la más larga tiene 25) y que las
 32 llamadas a otros módulos estuvieran declaradas en el contrato.
 
-**Modificaciones:** _(completar: anotar qué partes del flujo se cambiaron al leerlo y
-probarlo, por ejemplo mensajes, orden de los datos que se piden o nombres de funciones.)_
+**Modificaciones:** No cambié el flujo generado. Lo probé contra los módulos reales
+cuando Federico y Gonzalo entregaron los suyos: el menú, el despacho de opciones, el
+submenú y la salida funcionan. Al ejecutarlo encontré dos cosas. Una, que el programa no
+encontraba `datos/complejos.json` si se lo corría parado en otra carpeta: el problema no
+estaba en `main.py` sino en las rutas relativas de `persistencia.py`, y lo corrigió
+Gonzalo. La otra, que el menú se cierra solo, porque `utils.pedir_opcion()` todavía es un
+stub que devuelve `"0"` sin leer el teclado.
 
-**Estado:** _(completar)_
+**Estado:** En uso, sin modificaciones. Falta probarlo de punta a punta cuando esté
+`utils.py`.
 
 ---
 
@@ -119,9 +131,15 @@ reemplazarlos al implementar.
 Golazo Fútbol, Mundial F5 y La Bombonerita. El sitio no especifica el tipo de cancha de
 esos tres. Los otros tres están tomados textualmente del HTML.
 
-**Modificaciones:** _(completar)_
+**Modificaciones:** Los stubs de `estructuras.py` y `persistencia.py` ya fueron
+reemplazados por Federico y Gonzalo; los de `utils.py` y `estadisticas.py` siguen sin
+implementar. El `"0"` que devuelve el stub de `pedir_opcion()` cumple su objetivo de no
+dejar el menú en un bucle infinito, pero confunde al ejecutar el programa, porque parece
+que se cerrara solo.
 
-**Estado:** _(completar)_
+**Estado:** Cumplió su función. Se va borrando a medida que cada integrante implementa su
+módulo. Queda pendiente confirmar el tipo de cancha de Golazo Fútbol, Mundial F5 y La
+Bombonerita en `datos/complejos.json`.
 
 ---
 
