@@ -247,3 +247,4 @@ commit ya subido, porque reescribir historia compartida por un error de tipeo en
 mensaje trae más problemas de los que soluciona.
 
 **Estado:** en uso. Commit `b7026e7`.
+
