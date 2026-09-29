@@ -1,16 +1,15 @@
 # persistencia.py — Lectura y escritura de los archivos del programa (JSON, CSV y TXT).
 # [GON] Gonzalo Tapia.
-#
-# ESQUELETO: las firmas son las acordadas en CONTRATO_MODULOS.md y main.py ya las usa.
-# Cada función devuelve un valor neutro hasta que Gonzalo la implemente.
+
 
 import os
 import json
 import csv
 from datetime import datetime
 
-CARPETA_DATOS = "datos"
-CARPETA_GRAFICOS = "graficos"
+CARPETA_BASE = os.path.dirname(os.path.abspath(__file__))
+CARPETA_DATOS = os.path.join(CARPETA_BASE, "datos")
+CARPETA_GRAFICOS = os.path.join(CARPETA_BASE, "graficos")
 RUTA_COMPLEJOS = os.path.join(CARPETA_DATOS, "complejos.json")
 RUTA_RESERVAS = os.path.join(CARPETA_DATOS, "reservas.json")
 RUTA_LOG = os.path.join(CARPETA_DATOS, "log_operaciones.txt")
@@ -38,11 +37,11 @@ def cargar_json(ruta, por_defecto=None):
         El contenido del archivo, o por_defecto si no existe o está dañado.
     """
     try:
-       with open(ruta, "r", encoding="utf-8") as archivo:
-           return json.load(archivo)
+        with open(ruta, "r", encoding="utf-8") as archivo:
+            return json.load(archivo)
     except FileNotFoundError:
-       guardar_json(ruta, por_defecto)
-       return por_defecto
+        guardar_json(ruta, por_defecto)
+        return por_defecto
     except (json.JSONDecodeError, IOError, OSError):
         return por_defecto
 
@@ -81,14 +80,13 @@ def exportar_csv(ruta, encabezados, filas):
         carpeta = os.path.dirname(ruta)
         if carpeta:
             os.makedirs(carpeta, exist_ok=True)
-        with open(ruta, "w",newline="", encoding="utf-8") as archivo:
+        with open(ruta, "w", newline="", encoding="utf-8") as archivo:
             escritor = csv.writer(archivo)
             escritor.writerow(encabezados)
             escritor.writerows(filas)
         return len(filas)
     except (IOError, OSError):
         return 0
-    
 
 
 def registrar_log(accion, detalle=""):
