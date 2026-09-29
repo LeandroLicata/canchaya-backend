@@ -247,4 +247,49 @@ commit ya subido, porque reescribir historia compartida por un error de tipeo en
 mensaje trae más problemas de los que soluciona.
 
 **Estado:** en uso. Commit `b7026e7`.
+---
+
+**Fecha:** 29/09/2026 | **Herramienta:** Claude | **Integrante:** Gustavo Di Paola
+
+**Prompt:** "eso tengo que hacer" — con el esqueleto de `utils.py` adjunto (firmas del
+contrato y `TODO [GUS]` en cada función). La IA no tenía `CONTRATO_MODULOS.md`, así que
+trabajó solo con lo que decía el archivo adjunto.
+
+**Resultado:** Implementó las diez funciones de `utils.py` con las firmas del esqueleto,
+sin cambiar ninguna: `pedir_texto()`, `pedir_entero()`, `pedir_opcion()`,
+`validar_email()`, `validar_fecha()`, `validar_fecha_reserva()`, `buscar_reservas()`,
+`ordenar_por()`, `formatear_reserva()` y `fila_csv()`. Agregó una función interna,
+`_nombre_complejo()`, para no repetir la búsqueda del nombre del complejo en las dos
+funciones de formateo.
+
+**Decisiones de diseño que tomó y que hay que poder explicar en la defensa:**
+
+- `validar_fecha()` exige que el texto tenga 10 caracteres antes de llamar a `strptime()`,
+  porque `strptime()` acepta `2026-9-5` sin ceros y el formato pedido es `AAAA-MM-DD`.
+- `validar_fecha_reserva()` reutiliza `validar_fecha()` y compara contra `date.today()`,
+  así que una reserva para hoy es válida.
+- `ordenar_por()` usa inserción escrita a mano, sin `sorted()`, sobre una copia de la
+  lista. Es estable: dos reservas con el mismo valor conservan el orden en que venían.
+- `buscar_reservas()` compara por coincidencia parcial sin distinguir mayúsculas cuando
+  tanto el valor buscado como el del diccionario son texto, y por igualdad en cualquier
+  otro caso (por ejemplo, un id numérico).
+- `pedir_opcion()` compara como texto pero devuelve el elemento original de la lista, para
+  que funcione igual con ids numéricos.
+
+**Supuesto a confirmar:** como no tenía el contrato, la IA supuso que las reservas tienen
+las claves `id_complejo` y `fecha` (formato `AAAA-MM-DD`) y que los complejos tienen `id`
+y `nombre`. Esos nombres se usan solo en `formatear_reserva()`, `fila_csv()` y
+`_nombre_complejo()`.
+
+**Verificación:** la IA corrió el módulo con entrada simulada: emails como `a@b.` y
+`a@@b.com`, fechas como `2026-02-30` y `2026-9-5`, reserva de ayer/hoy/mañana, lista
+vacía y orden ascendente/descendente en `ordenar_por()`, y los tres pedidos por teclado
+con datos inválidos antes del válido. Comprobó con el árbol sintáctico que todas las
+funciones tengan docstring y que ninguna supere las 40 líneas (la más larga tiene 25).
+No probó el módulo integrado con `main.py`.
+
+**Modificaciones:** _(completar: qué cambié al leer y probar el código, y por qué. Por
+ejemplo, si ajusté los nombres de las claves según `CONTRATO_MODULOS.md`.)_
+
+**Estado:** _(completar: en uso / modificado parcialmente, y el commit donde quedó.)_
 
