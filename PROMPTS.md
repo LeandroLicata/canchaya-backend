@@ -163,3 +163,69 @@ líneas (la más larga tiene 26) y que el módulo no use `print()`.
 **Modificaciones:** _(completar: qué cambié al leer y probar el código, y por qué.)_
 
 **Estado:** _(completar)_
+
+---
+
+**Fecha:** 23/09/2026 | **Herramienta:** Claude | **Integrante:** Gonzalo Tapia
+
+**Prompt:** "Soy el encargado de persistencia" — con el enlace al repositorio y el pedido
+explícito de que me explicara paso a paso en lugar de darme el código resuelto, porque
+quería escribirlo yo. La IA leyó `CONTRATO_MODULOS.md` y `persistencia.py` para ver las
+firmas y los `TODO [GON]`.
+
+**Resultado:** No generó el módulo. Para cada una de las cuatro funciones me indicó qué
+argumentos llevaba cada llamada y por qué, dejando huecos que completé yo: `os.makedirs()`
+con `exist_ok=True`, `json.dump()` con `ensure_ascii=False` e `indent=2`, `csv.writer()`
+con `writerow()` para el encabezado y `writerows()` para las filas, y `strftime()` con el
+formato `"%Y-%m-%d %H:%M:%S"`. La única función que me dio armada fue `cargar_json()`,
+después de pedírsela.
+
+**Puntos que tuve que entender para escribirlo:**
+
+- `FileNotFoundError` va antes que `OSError` en `cargar_json()`, porque es un subtipo suyo
+  y Python se queda con el primer `except` que coincide. Si se invierten, el archivo nunca
+  se crea.
+- `newline=""` en `exportar_csv()` evita que en Windows quede una línea en blanco entre
+  cada fila, porque el módulo `csv` ya escribe su propio salto.
+- El log abre en modo `"a"` y no `"w"`: `"w"` vacía el archivo, así que cada operación
+  borraría el historial anterior.
+
+**Errores que encontré yo:** en `exportar_csv()` había puesto el modo `"r"` en lugar de
+`"w"` y la función devolvía `0` sin explicación. Lo detecté probando la función suelta con
+`python -c`, y entendí que el `except (IOError, OSError)` estaba capturando el
+`FileNotFoundError` que largaba el `open()` en modo lectura.
+
+**Verificación:** probé cada función por separado antes de commitear. El log lo corrí
+cuatro veces seguidas para confirmar que el modo `"a"` acumulaba las líneas en vez de
+pisarlas.
+
+**Modificaciones:** escribí las cuatro funciones yo a partir de las indicaciones. De lo
+que me pasó armado (`cargar_json`) no cambié nada, pero verifiqué el orden de los `except`
+antes de aceptarlo.
+
+**Estado:** en uso. Commits `125565d` y `4325050`.
+
+---
+
+**Fecha:** 28/09/2026 | **Herramienta:** Claude | **Integrante:** Gonzalo Tapia
+
+**Prompt:** Le pasé las cinco correcciones que me hizo Leandro sobre `persistencia.py`
+para ir aplicándolas una por una.
+
+**Resultado:** El arreglo de fondo (las rutas relativas con `__file__`) no salió de la IA
+sino de Leandro, que detectó que el programa creaba un `complejos.json` vacío al
+ejecutarse desde otra carpeta. La IA me indicó cómo aplicarlo y qué hace `__file__`.
+
+**Error de la IA y cómo lo resolví:** me indicó usar "Format Document" de VSCode para
+normalizar la indentación. El formateador que tomó no era de Python y borró la
+indentación de todo el archivo, dejándolo sin poder importarse (`IndentationError`).
+Lo recuperé con `git checkout persistencia.py`, que restauró la versión del último
+commit, y rehice las correcciones a mano. También me indicó un nombre mal escrito
+(`_file_` con un guion bajo de cada lado en vez de `__file__` con dos), que corregí antes
+de ejecutar.
+
+**Modificaciones:** apliqué los cinco puntos a mano. Descarté rehacer el mensaje de un
+commit ya subido, porque reescribir historia compartida por un error de tipeo en el
+mensaje trae más problemas de los que soluciona.
+
+**Estado:** en uso. Commit `b7026e7`.
