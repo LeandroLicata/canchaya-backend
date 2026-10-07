@@ -343,4 +343,4 @@ tiene 29) y que los tests de `estructuras` sigan pasando.
 **Modificaciones:** Probé manualmente el programa y todo funcionó correctamente, así que
 no le hice cambios al código generado.
 
-**Estado:** en uso, sin modificaciones.
+**Estado:** en uso, sin modificaciones. Commit `b40857f`.
