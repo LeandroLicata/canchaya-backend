@@ -293,3 +293,54 @@ ejemplo, si ajusté los nombres de las claves según `CONTRATO_MODULOS.md`.)_
 
 **Estado:** _(completar: en uso / modificado parcialmente, y el commit donde quedó.)_
 
+
+---
+
+**Fecha:** 06/10/2026 | **Herramienta:** Claude (Claude Code) | **Integrante:** Leandro Licata
+
+**Prompt:** "¿Qué sería la lista de espera?", después "¿Cómo se suele manejar esto? ¿Qué
+es lo recomendable?" y por último "Implementalo". La pregunta surgió al probar el menú:
+en la opción 1 solo se podía entrar en lista de espera cuando los cinco horarios del día
+estaban ocupados, y al cancelar una reserva el turno quedaba libre hasta que alguien
+entrara a la opción 5.
+
+**Resultado:** Propuso manejar la lista de espera por horario y de forma voluntaria, como
+en los sistemas de reservas reales, y reasignar el turno automáticamente al cancelar. Lo
+implementó en `main.py` con tres funciones nuevas:
+
+- `mostrar_horarios()`: imprime la grilla de horarios con libre/ocupado. La usan las
+  opciones 1 y 2, así que se sacó el bucle que estaba repetido en
+  `flujo_consultar_disponibilidad()`.
+- `elegir_horario()`: deja elegir cualquiera de los cinco horarios. Si el elegido está
+  ocupado, pregunta "¿Querés anotarte en lista de espera? (s/n)"; con "n" vuelve a pedir
+  el horario. El prompt indica el formato: `Horario (HH:MM):`.
+- `promover_espera()`: al cancelar, busca al primero de la cola de ese turno con
+  `estructuras.siguiente_en_espera()`, lo confirma con `estructuras.confirmar_espera()`
+  y lo muestra en pantalla.
+
+`flujo_registrar_reserva()` y `flujo_cancelar_reserva()` pasaron a usar estas funciones,
+y se quitó el aviso "Revisá la opción 5". La opción 5 quedó como consulta de la cola y
+respaldo manual. No se tocó ningún otro módulo: todo usa funciones que ya existían en
+`estructuras.py` y `utils.py`.
+
+**Decisiones de diseño que hay que poder explicar en la defensa:**
+
+- La cola es FIFO por turno (complejo, fecha y hora): sale primero el que se anotó
+  primero, según `fecha_registro` y, si empatan, el id.
+- La reasignación al cancelar se hace en `main.py` llamando a funciones de
+  `estructuras.py`, sin lógica de cálculo propia, para respetar la regla de que `main.py`
+  solo maneja menú y flujo.
+- `confirmar_espera()` vuelve a verificar que el turno esté libre, así que nunca puede
+  haber dos reservas confirmadas para el mismo turno.
+
+**Verificación:** la IA corrió el programa sobre una copia del proyecto con datos vacíos:
+reserva confirmada a las 20:00, segunda reserva para el mismo turno aceptando la lista
+de espera (queda `en_espera`) y cancelación de la primera (la segunda pasa sola a
+`confirmada`). Probó también entradas inválidas: horario `20`, respuesta distinta de
+s/n y respuesta "n". Comprobó que ninguna función supere las 40 líneas (la más larga
+tiene 29) y que los tests de `estructuras` sigan pasando.
+
+**Modificaciones:** Probé manualmente el programa y todo funcionó correctamente, así que
+no le hice cambios al código generado.
+
+**Estado:** en uso, sin modificaciones.

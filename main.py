@@ -103,6 +103,59 @@ def elegir_reserva(lista_reservas, lista_complejos, accion):
     return utils.pedir_opcion("  Número de reserva a {0}: ".format(accion), ids)
 
 
+def mostrar_horarios(lista_reservas, id_complejo, fecha):
+    """Imprime cada horario del día marcado como libre u ocupado.
+
+    Parámetros: la lista de reservas, el id del complejo y la fecha.
+    Devuelve: nada.
+    """
+    libres = estructuras.horarios_disponibles(lista_reservas, id_complejo, fecha)
+    for hora in estructuras.HORARIOS:
+        if hora in libres:
+            print("   {0}   libre".format(hora))
+        else:
+            print("   {0}   ocupado".format(hora))
+
+
+def elegir_horario(lista_reservas, id_complejo, fecha):
+    """Pide un horario y, si está ocupado, ofrece anotarse en la lista de espera.
+
+    Parámetros: la lista de reservas, el id del complejo y la fecha.
+    Devuelve: el horario elegido (libre, o el ocupado si el usuario acepta esperar).
+    """
+    print("\n  Horarios del día:")
+    mostrar_horarios(lista_reservas, id_complejo, fecha)
+    horarios = list(estructuras.HORARIOS)
+    while True:
+        hora = utils.pedir_opcion("  Horario (HH:MM): ", horarios)
+        if not estructuras.esta_ocupado(lista_reservas, id_complejo, fecha, hora):
+            return hora
+        respuesta = utils.pedir_opcion(
+            "  Ese horario está ocupado. ¿Querés anotarte en lista de espera? (s/n): ",
+            ["s", "n"])
+        if respuesta == "s":
+            return hora
+
+
+def promover_espera(lista_reservas, reserva, lista_complejos):
+    """Confirma al primero de la cola del turno que acaba de liberarse, si hay alguno.
+
+    Parámetros: la lista de reservas, la reserva cancelada y la lista de complejos.
+    Devuelve: la lista de reservas actualizada.
+    """
+    siguiente = estructuras.siguiente_en_espera(
+        lista_reservas, reserva["id_complejo"], reserva["fecha"], reserva["hora"])
+    if siguiente is None:
+        return lista_reservas
+    lista_reservas, confirmada = estructuras.confirmar_espera(lista_reservas,
+                                                              siguiente["id"])
+    if confirmada:
+        print("  El turno pasó al primero de la lista de espera:")
+        print("   " + utils.formatear_reserva(siguiente, lista_complejos))
+        persistencia.registrar_log("confirmar_espera", "#{0}".format(siguiente["id"]))
+    return lista_reservas
+
+
 def flujo_registrar_reserva(lista_reservas, lista_complejos):
     """Pide los datos de una reserva nueva y la agrega.
 
@@ -112,12 +165,7 @@ def flujo_registrar_reserva(lista_reservas, lista_complejos):
     complejo = elegir_complejo(lista_complejos)
     fecha = pedir_validado("  Fecha (AAAA-MM-DD): ", utils.validar_fecha_reserva,
                            "Fecha inválida o ya pasada.")
-    libres = estructuras.horarios_disponibles(lista_reservas, complejo["id"], fecha)
-    if libres:
-        hora = utils.pedir_opcion("  Horario: ", libres)
-    else:
-        print("  No quedan horarios libres para esa fecha: vas a entrar en lista de espera.")
-        hora = utils.pedir_opcion("  Horario deseado: ", list(estructuras.HORARIOS))
+    hora = elegir_horario(lista_reservas, complejo["id"], fecha)
 
     datos = {
         "nombre_cliente": utils.pedir_texto("  Nombre y apellido: ", 3),
@@ -145,13 +193,8 @@ def flujo_consultar_disponibilidad(lista_reservas, lista_complejos):
     """
     complejo = elegir_complejo(lista_complejos)
     fecha = pedir_validado("  Fecha (AAAA-MM-DD): ", utils.validar_fecha, "Fecha inválida.")
-    libres = estructuras.horarios_disponibles(lista_reservas, complejo["id"], fecha)
     print("\n  {0} — {1}".format(complejo["nombre"], fecha))
-    for hora in estructuras.HORARIOS:
-        if hora in libres:
-            print("   {0}   libre".format(hora))
-        else:
-            print("   {0}   ocupado".format(hora))
+    mostrar_horarios(lista_reservas, complejo["id"], fecha)
     persistencia.registrar_log("consultar_disponibilidad",
                                "{0} {1}".format(complejo["nombre"], fecha))
 
@@ -223,8 +266,8 @@ def flujo_cancelar_reserva(lista_reservas, lista_complejos):
         return lista_reservas
     print("  Reserva #{0} cancelada.".format(id_reserva))
     persistencia.registrar_log("cancelar_reserva", "#{0} {1}".format(id_reserva, motivo))
-    print("  Revisá la opción 5 por si alguien está esperando ese turno.")
-    return lista_reservas
+    reserva = estructuras.buscar_reserva_por_id(lista_reservas, id_reserva)
+    return promover_espera(lista_reservas, reserva, lista_complejos)
 
 
 def flujo_modificar_cancelar(lista_reservas, lista_complejos):
