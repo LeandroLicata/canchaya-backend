@@ -4,7 +4,7 @@
 #
 # Las firmas son las acordadas en CONTRATO_MODULOS.md.
 # SUPUESTO: cada reserva es un dict con las claves
-#   id, cliente, email, telefono, id_complejo, fecha (AAAA-MM-DD), hora,
+#   id, nombre_cliente, email, telefono, id_complejo, fecha (AAAA-MM-DD), hora,
 #   jugadores, estado
 # y cada complejo un dict con las claves id y nombre.
 # Si el contrato usa otros nombres, cambiarlos solo en formatear_reserva y fila_csv.
@@ -190,7 +190,7 @@ def formatear_reserva(reserva, lista_complejos):
     nombre = _nombre_complejo(reserva["id_complejo"], lista_complejos)
     anio, mes, dia = reserva["fecha"].split("-")
     return (f"#{reserva['id']} {dia}/{mes} {reserva['hora']} — {nombre} — "
-            f"{reserva['cliente']} ({reserva['estado']})")
+            f"{reserva['nombre_cliente']} ({reserva['estado']})")
 
 
 def fila_csv(reserva, lista_complejos):
@@ -206,7 +206,7 @@ def fila_csv(reserva, lista_complejos):
     nombre = _nombre_complejo(reserva["id_complejo"], lista_complejos)
     return [
         reserva["id"],
-        reserva["cliente"],
+        reserva["nombre_cliente"],
         reserva["email"],
         reserva["telefono"],
         nombre,
