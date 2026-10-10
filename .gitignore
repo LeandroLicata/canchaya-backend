@@ -14,3 +14,4 @@ datos/reservas.json
 datos/reporte_*.csv
 datos/log_operaciones.txt
 graficos/*.png
+*.db
