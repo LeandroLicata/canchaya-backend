@@ -344,3 +344,66 @@ tiene 29) y que los tests de `estructuras` sigan pasando.
 no le hice cambios al código generado.
 
 **Estado:** en uso, sin modificaciones. Commit `b40857f`.
+
+
+---
+
+**Fecha:** 10-11/10/2026 | **Herramienta:** Claude | **Integrante:** Gonzalo Tapia
+
+**Prompt:** Le pasé la tarea que me asignó Leandro (migrar la persistencia de JSON a
+SQLite) con el pedido de ir paso a paso y escribir yo el código. A mitad de la sesión le
+tuve que pedir que fuera más didáctico, porque me estaba dando funciones de seis pasos
+que yo entregaba a medias.
+
+**Resultado:** No generó el módulo. Diseñamos juntos las dos tablas a partir de los
+diccionarios del contrato y después fui escribiendo las funciones de a una, probando cada
+una antes de seguir: `conectar()`, `inicializar_bd()`, `guardar_tabla()`, `cargar_tabla()`,
+`escribir_json()` y `exportar_json()`.
+
+**Decisiones que tomé y tengo que poder defender:**
+
+- El `id` es `PRIMARY KEY` sin `AUTOINCREMENT`, porque `crear_reserva()` de Federico ya
+  calcula el id como máximo + 1. Si la base también los generara, habría dos fuentes
+  compitiendo.
+- Dejé `email` y `telefono` como `NOT NULL`. La IA sugería sacarlos para no complicar las
+  inserciones; no le hice caso, porque sin esos datos no hay forma de notificar al cliente
+  ni de llamarlo si no se presenta. Igual el `NOT NULL` no rechaza la cadena vacía, así
+  que la validación de `utils.py` sigue siendo la que hace el trabajo real.
+- Las fechas y horas van como `TEXT`: SQLite no tiene tipo fecha, y el formato AAAA-MM-DD
+  ordenado como texto da el mismo resultado que ordenado como fecha.
+- Los valores se insertan con parámetros `?` y nunca concatenados en el SQL, para evitar
+  inyección. Con Flask en camino deja de ser teórico.
+- El `.db` va en el `.gitignore`: es un archivo generado y binario, y git no puede
+  resolver conflictos ahí.
+- Elegí que la exportación a JSON se dispare desde `main.py` al salir, en lugar de hacerla
+  automática en cada guardado. Tiene el costo de depender de una línea que agregue
+  Leandro, pero hace una sola exportación por sesión en vez de una por operación.
+
+**Errores encontrados durante la sesión:**
+
+- En la tabla `reservas` puse primero `id_complejo INTEGER PRIMARY KEY`. Eso habría
+  impedido tener dos reservas en el mismo complejo: `id_complejo` es una referencia a otra
+  tabla, no la clave de la reserva.
+- Escribí `SELECT FROM` sin el asterisco en `cargar_tabla()`. La función devolvía lista
+  vacía sin explicación, porque el `except sqlite3.Error` capturaba el error de sintaxis y
+  lo convertía en el valor neutro que pide el contrato. Lo encontré corriendo la consulta
+  a mano sin el `try`. Es la segunda vez en la misma sesión que un `except` me esconde un
+  error, así que me quedó el método.
+- La IA diagnosticó mal un problema: atribuyó a OneDrive que la base perdiera las tablas.
+  Lo verifiqué con `dir` y la base estaba intacta; el problema era el `SELECT` de arriba.
+- Tipos inexistentes en el `CREATE TABLE` (`TIME`, `INTEFER`). SQLite los acepta sin
+  avisar, así que no se notan hasta que los datos salen raros. Los verifiqué consultando
+  `sqlite_master`.
+- Al mover el cuerpo de `guardar_json()` a `escribir_json()` quedaron diez líneas de
+  código muerto después del `return`. Las borré.
+
+**Verificación:** probé cada función suelta con `python -c` antes de integrarla, y corrí
+`python main.py` completo antes de cada commit. La prueba final fue registrar una reserva,
+salir, volver a entrar y comprobar que seguía ahí y que no estaba en el JSON: eso confirma
+que sale de la base.
+
+**Modificaciones:** escribí todas las funciones yo salvo `conectar()`, `escribir_json()`
+(que es mi `guardar_json` original movida de lugar) y el armado del `INSERT` dinámico a
+partir de `fila.keys()`, que me lo explicó y adapté.
+
+**Estado:** en uso. Commits `dc147aa`, `bb37021`, `9c5300c` y `c03d6b6`.
