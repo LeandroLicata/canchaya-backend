@@ -11,8 +11,6 @@ import persistencia
 import utils
 
 OPCIONES_MENU = ("1", "2", "3", "4", "5", "6", "7", "0")
-MIN_JUGADORES = 2
-MAX_JUGADORES = 14
 
 
 def mostrar_menu():
@@ -137,22 +135,17 @@ def elegir_horario(lista_reservas, id_complejo, fecha):
             return hora
 
 
-def promover_espera(lista_reservas, reserva, lista_complejos):
-    """Confirma al primero de la cola del turno que acaba de liberarse, si hay alguno.
+def reasignar_turno(lista_reservas, reserva, lista_complejos):
+    """Pasa el turno liberado al primero de la lista de espera y lo informa.
 
     Parámetros: la lista de reservas, la reserva cancelada y la lista de complejos.
     Devuelve: la lista de reservas actualizada.
     """
-    siguiente = estructuras.siguiente_en_espera(
-        lista_reservas, reserva["id_complejo"], reserva["fecha"], reserva["hora"])
-    if siguiente is None:
-        return lista_reservas
-    lista_reservas, confirmada = estructuras.confirmar_espera(lista_reservas,
-                                                              siguiente["id"])
-    if confirmada:
+    lista_reservas, promovida = estructuras.promover_espera(lista_reservas, reserva)
+    if promovida is not None:
         print("  El turno pasó al primero de la lista de espera:")
-        print("   " + utils.formatear_reserva(siguiente, lista_complejos))
-        persistencia.registrar_log("confirmar_espera", "#{0}".format(siguiente["id"]))
+        print("   " + utils.formatear_reserva(promovida, lista_complejos))
+        persistencia.registrar_log("confirmar_espera", "#{0}".format(promovida["id"]))
     return lista_reservas
 
 
@@ -175,7 +168,8 @@ def flujo_registrar_reserva(lista_reservas, lista_complejos):
         "fecha": fecha,
         "hora": hora,
         "jugadores": utils.pedir_entero("  Cantidad de jugadores: ",
-                                        MIN_JUGADORES, MAX_JUGADORES),
+                                        estructuras.MIN_JUGADORES,
+                                        estructuras.MAX_JUGADORES),
         "comentarios": utils.pedir_texto("  Comentarios (opcional): ", 0),
     }
     reserva = estructuras.crear_reserva(lista_reservas, datos)
@@ -235,7 +229,8 @@ def flujo_modificar_reserva(lista_reservas, lista_complejos):
     campo = utils.pedir_opcion("  ¿Qué querés modificar? (jugadores / comentarios): ",
                                ["jugadores", "comentarios"])
     if campo == "jugadores":
-        valor = utils.pedir_entero("  Nueva cantidad: ", MIN_JUGADORES, MAX_JUGADORES)
+        valor = utils.pedir_entero("  Nueva cantidad: ", estructuras.MIN_JUGADORES,
+                                   estructuras.MAX_JUGADORES)
     else:
         valor = utils.pedir_texto("  Nuevos comentarios: ", 0)
     lista_reservas, modificada = estructuras.modificar_reserva(
@@ -267,7 +262,7 @@ def flujo_cancelar_reserva(lista_reservas, lista_complejos):
     print("  Reserva #{0} cancelada.".format(id_reserva))
     persistencia.registrar_log("cancelar_reserva", "#{0} {1}".format(id_reserva, motivo))
     reserva = estructuras.buscar_reserva_por_id(lista_reservas, id_reserva)
-    return promover_espera(lista_reservas, reserva, lista_complejos)
+    return reasignar_turno(lista_reservas, reserva, lista_complejos)
 
 
 def flujo_modificar_cancelar(lista_reservas, lista_complejos):

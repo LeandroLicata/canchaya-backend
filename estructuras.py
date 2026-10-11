@@ -14,6 +14,9 @@ ESTADO_CANCELADA = "cancelada"
 ESTADO_EN_ESPERA = "en_espera"
 
 CAMPOS_EDITABLES = ("jugadores", "comentarios")
+# [LEA] Movidas desde main.py: las usan la consola y la API.
+MIN_JUGADORES = 2
+MAX_JUGADORES = 14
 FORMATO_REGISTRO = "%Y-%m-%d %H:%M:%S"
 
 
@@ -227,3 +230,25 @@ def confirmar_espera(lista_reservas, id_reserva):
         return lista_reservas, False
     reserva["estado"] = ESTADO_CONFIRMADA
     return lista_reservas, True
+
+
+# [LEA] Agregada para la API: es la lógica que antes estaba en main.py, sin los print,
+# para que la consola y la API la compartan.
+def promover_espera(lista_reservas, reserva):
+    """Confirma al primero de la cola del turno que dejó libre una reserva cancelada.
+
+    Parámetros:
+        lista_reservas: lista actual.
+        reserva: la reserva que se acaba de cancelar.
+    Devuelve:
+        Tupla (lista_reservas, promovida), donde promovida es la reserva que pasó a
+        confirmada, o None si no había nadie esperando o el turno sigue ocupado.
+    """
+    siguiente = siguiente_en_espera(lista_reservas, reserva["id_complejo"],
+                                    reserva["fecha"], reserva["hora"])
+    if siguiente is None:
+        return lista_reservas, None
+    lista_reservas, confirmada = confirmar_espera(lista_reservas, siguiente["id"])
+    if not confirmada:
+        return lista_reservas, None
+    return lista_reservas, siguiente

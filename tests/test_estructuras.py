@@ -140,5 +140,30 @@ class TestListaDeEspera(unittest.TestCase):
         self.assertFalse(estructuras.confirmar_espera(lista, en_espera["id"])[1])
 
 
+# [LEA] Pruebas de promover_espera(), agregada para la API. Ya están escritas con
+# pytest, que es el formato al que se va a migrar el resto de este archivo.
+def test_promover_espera_confirma_al_primero():
+    """Al cancelar el titular, el primero de la cola pasa a confirmado."""
+    lista = []
+    titular, _ = reservar(lista)
+    primero, _ = reservar(lista)
+    segundo, _ = reservar(lista)
+    estructuras.cancelar_reserva(lista, titular["id"], "No viene")
+    lista, promovida = estructuras.promover_espera(lista, titular)
+    assert promovida is primero
+    assert primero["estado"] == estructuras.ESTADO_CONFIRMADA
+    assert segundo["estado"] == estructuras.ESTADO_EN_ESPERA
+
+
+def test_promover_espera_sin_cola_o_turno_ocupado():
+    """Devuelve None si no hay nadie esperando o si el turno sigue ocupado."""
+    lista = []
+    titular, _ = reservar(lista)
+    assert estructuras.promover_espera(lista, titular)[1] is None
+    en_espera, _ = reservar(lista)
+    assert estructuras.promover_espera(lista, titular)[1] is None
+    assert en_espera["estado"] == estructuras.ESTADO_EN_ESPERA
+
+
 if __name__ == "__main__":
     unittest.main()
