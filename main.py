@@ -402,6 +402,10 @@ def main():
         mostrar_menu()
         opcion = utils.pedir_opcion("  Opción: ", list(OPCIONES_MENU))
         if opcion != "0":
+            # Se recarga antes de cada operación por si la API guardó reservas nuevas
+            # mientras la consola estaba abierta: guardar_json reescribe la tabla entera
+            # y, con la lista vieja, las borraría.
+            lista_reservas = persistencia.cargar_json(persistencia.RUTA_RESERVAS, [])
             lista_reservas = ejecutar_opcion(opcion, lista_reservas, lista_complejos)
             # Se guarda después de cada operación y no solo al salir, para no perder
             # datos si el programa se corta de forma inesperada.
