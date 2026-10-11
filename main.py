@@ -65,10 +65,8 @@ def elegir_complejo(lista_complejos):
             complejo["id"], complejo["nombre"], complejo["zona"], complejo["precio_hora"]))
     ids = [complejo["id"] for complejo in lista_complejos]
     id_elegido = utils.pedir_opcion("  Número de complejo: ", ids)
-    # pedir_opcion solo devuelve un id de la lista, así que el for siempre encuentra uno.
-    for complejo in lista_complejos:
-        if complejo["id"] == id_elegido:
-            return complejo
+    # pedir_opcion solo devuelve un id de la lista, así que siempre encuentra uno.
+    return utils.buscar_complejo(lista_complejos, id_elegido)
 
 
 def mostrar_reservas(reservas, lista_complejos, titulo="Resultados"):

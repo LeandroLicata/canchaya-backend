@@ -407,3 +407,46 @@ que sale de la base.
 partir de `fila.keys()`, que me lo explicó y adapté.
 
 **Estado:** en uso. Commits `dc147aa`, `bb37021`, `9c5300c` y `c03d6b6`.
+---
+
+**Fecha:** 11/10/2026 | **Herramienta:** Claude (Claude Code) | **Integrante:** Leandro Licata
+
+**Prompt:** "Tengo que implementar Flask o FastAPI para conectar con el frontend, ¿me
+ayudarías a decidir cuál usar?", después "Ok, usemos Flask, ¿me harías un plan de
+implementación?" y por último "Vamos a hacer nosotros lo que hay que resolver antes, ya
+que Fede y Gus están ocupados".
+
+**Resultado:** Recomendó Flask y no FastAPI, porque los modelos de Pydantic son clases y la
+consigna prohíbe la POO. Armó un plan de la API por etapas y marcó tres cosas a resolver
+antes de escribir los endpoints. Resolvió las dos que están en el backend:
+
+- `estructuras.py`: pasan acá `MIN_JUGADORES` y `MAX_JUGADORES` (antes en `main.py`), y se
+  agrega `promover_espera(lista_reservas, reserva)`, que es la reasignación del turno
+  que antes estaba en `main.py`, ahora sin los `print`, para que la consola y la API la
+  compartan.
+- `utils.py`: `buscar_complejo()` (`_nombre_complejo()` pasa a usarla) y
+  `validar_reserva(datos, lista_complejos)`, con dos auxiliares (`es_texto_valido()`,
+  `es_entero_en_rango()`). La API recibe la reserva entera en un JSON y no puede pedir
+  los datos de a uno con reintento como la consola: la valida de una sola vez y devuelve
+  el primer error encontrado, o `None`.
+- `main.py`: `promover_espera()` pasa a llamarse `reasignar_turno()` y solo imprime lo que
+  devuelve `estructuras.promover_espera()`; `elegir_complejo()` usa `buscar_complejo()`.
+- Tests: dos casos nuevos en `test_estructuras.py` y un archivo nuevo, `test_utils.py`.
+
+Las funciones nuevas en `estructuras.py` y `utils.py` llevan un comentario `[LEA]`,
+porque se escribieron en módulos de Federico y Gustavo mientras ellos estaban ocupados.
+Hay que avisarles.
+
+**Decisiones de diseño que hay que poder explicar en la defensa:**
+
+- `validar_reserva()` no convierte tipos: si `jugadores` llega como `"10"` en vez de `10`,
+  es un error. El frontend tiene que mandar números, y así no hace falta un `try/except`.
+- `True` no cuenta como entero (en Python `bool` es subclase de `int`), igual que en
+  `estructuras.valor_valido()`.
+
+**Verificación:** 21 tests pasando, ninguna función supera las 40 líneas, y se probó
+`reasignar_turno()` con una lista en memoria (la reserva en espera pasa a confirmada).
+
+**Modificaciones:** _(completar)_
+
+**Estado:** _(completar)_

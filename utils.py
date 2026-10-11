@@ -11,6 +11,8 @@
 
 from datetime import datetime, date
 
+import estructuras
+
 
 def pedir_texto(mensaje, largo_minimo=3):
     """Pide un texto por teclado y reintenta hasta que sea válido.
@@ -170,12 +172,28 @@ def ordenar_por(lista, campo, descendente=False):
     return resultado
 
 
-def _nombre_complejo(id_complejo, lista_complejos):
-    """Devuelve el nombre del complejo, o '?' si no se encuentra el id."""
+# [LEA] Agregada para la API: hace falta saber si un id de complejo existe.
+def buscar_complejo(lista_complejos, id_complejo):
+    """Busca un complejo por su id.
+
+    Parámetros:
+        lista_complejos: lista donde buscar.
+        id_complejo: id del complejo buscado.
+    Devuelve:
+        El diccionario del complejo, o None si no existe.
+    """
     for complejo in lista_complejos:
         if complejo["id"] == id_complejo:
-            return complejo["nombre"]
-    return "?"
+            return complejo
+    return None
+
+
+def _nombre_complejo(id_complejo, lista_complejos):
+    """Devuelve el nombre del complejo, o '?' si no se encuentra el id."""
+    complejo = buscar_complejo(lista_complejos, id_complejo)
+    if complejo is None:
+        return "?"
+    return complejo["nombre"]
 
 
 def formatear_reserva(reserva, lista_complejos):
@@ -214,3 +232,66 @@ def fila_csv(reserva, lista_complejos):
         reserva["jugadores"],
         reserva["estado"],
     ]
+
+
+# [LEA] Agregadas para la API: en consola cada dato se valida al pedirlo, pero la API
+# recibe la reserva completa en un JSON y tiene que validarla de una sola vez.
+def es_texto_valido(valor, largo_minimo):
+    """Indica si un valor es un texto con al menos cierta cantidad de caracteres.
+
+    Parámetros:
+        valor: el dato a revisar (puede venir de cualquier tipo desde el JSON).
+        largo_minimo: cantidad mínima de caracteres, sin contar espacios de los bordes.
+    Devuelve:
+        True si es un texto suficientemente largo, False si no.
+    """
+    return isinstance(valor, str) and len(valor.strip()) >= largo_minimo
+
+
+def es_entero_en_rango(valor, minimo, maximo):
+    """Indica si un valor es un número entero dentro de un rango.
+
+    Parámetros:
+        valor: el dato a revisar.
+        minimo y maximo: límites aceptados, ambos incluidos.
+    Devuelve:
+        True si es un entero entre minimo y maximo, False si no.
+    """
+    # bool es subclase de int en Python: se descarta para que True no cuente como 1.
+    if not isinstance(valor, int) or isinstance(valor, bool):
+        return False
+    return minimo <= valor <= maximo
+
+
+def validar_reserva(datos, lista_complejos):
+    """Valida todos los campos de una reserva nueva recibida de una sola vez.
+
+    Parámetros:
+        datos: diccionario con los campos que recibe estructuras.crear_reserva().
+        lista_complejos: para verificar que el complejo elegido exista.
+    Devuelve:
+        None si todo es válido, o un texto con el primer error encontrado.
+    """
+    if not isinstance(datos, dict):
+        return "Los datos de la reserva tienen un formato inválido."
+    if not es_texto_valido(datos.get("nombre_cliente"), 3):
+        return "El nombre debe tener al menos 3 caracteres."
+    email = datos.get("email")
+    if not isinstance(email, str) or not validar_email(email):
+        return "El email no es válido."
+    if not es_texto_valido(datos.get("telefono"), 6):
+        return "El teléfono debe tener al menos 6 caracteres."
+    if buscar_complejo(lista_complejos, datos.get("id_complejo")) is None:
+        return "El complejo elegido no existe."
+    fecha = datos.get("fecha")
+    if not isinstance(fecha, str) or not validar_fecha_reserva(fecha):
+        return "La fecha no es válida o ya pasó (formato AAAA-MM-DD)."
+    if datos.get("hora") not in estructuras.HORARIOS:
+        return "El horario no es válido."
+    if not es_entero_en_rango(datos.get("jugadores"), estructuras.MIN_JUGADORES,
+                              estructuras.MAX_JUGADORES):
+        return "La cantidad de jugadores debe estar entre {0} y {1}.".format(
+            estructuras.MIN_JUGADORES, estructuras.MAX_JUGADORES)
+    if not isinstance(datos.get("comentarios", ""), str):
+        return "Los comentarios deben ser texto."
+    return None
