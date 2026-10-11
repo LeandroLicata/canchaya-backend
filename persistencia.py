@@ -61,6 +61,8 @@ def guardar_json(ruta, datos):
     Devuelve:
         True si pudo guardar, False si falló.
     """
+    if ruta in TABLAS:
+        return guardar_tabla(TABLAS[ruta], datos)
     try:
         carpeta = os.path.dirname(ruta)
         if carpeta:
