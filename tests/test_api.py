@@ -28,7 +28,9 @@ def cliente(tmp_path, monkeypatch):
     """
     monkeypatch.setattr(persistencia, "RUTA_BD", str(tmp_path / "prueba.db"))
     monkeypatch.setattr(persistencia, "RUTA_LOG", str(tmp_path / "log.txt"))
+    # La base temporal es nueva y se llenaría con los JSON reales: se pisan las dos tablas.
     persistencia.guardar_tabla("complejos", COMPLEJOS)
+    persistencia.guardar_tabla("reservas", [])
     return api.app.test_client()
 
 

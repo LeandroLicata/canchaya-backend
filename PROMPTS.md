@@ -433,8 +433,15 @@ antes de escribir los endpoints. Resolvió las dos que están en el backend:
   devuelve `estructuras.promover_espera()`; `elegir_complejo()` usa `buscar_complejo()`.
 - Tests: dos casos nuevos en `test_estructuras.py` y un archivo nuevo, `test_utils.py`.
 
-Las funciones nuevas en `estructuras.py` y `utils.py` llevan un comentario `[LEA]`,
-porque se escribieron en módulos de Federico y Gustavo mientras ellos estaban ocupados.
+Después armó el esqueleto de `api.py` (CORS, errores en JSON y `GET /api/complejos`),
+`requirements.txt` y `tests/test_api.py`. Al probar la API con el servidor levantado,
+`/api/complejos` devolvía una lista vacía: la base `canchaya.db` está en el `.gitignore`,
+así que en un clon nuevo se crea vacía y nada la llenaba desde los JSON (tampoco andaba la
+consola). Se agregó en `persistencia.py` `importar_json()` y `leer_json()`, y
+`inicializar_bd()` las llama cuando la base no existía.
+
+Las funciones nuevas en `estructuras.py`, `utils.py` y `persistencia.py` llevan un
+comentario `[LEA]`, porque se escribieron en módulos de Federico, Gustavo y Gonzalo.
 Hay que avisarles.
 
 **Decisiones de diseño que hay que poder explicar en la defensa:**
@@ -444,8 +451,8 @@ Hay que avisarles.
 - `True` no cuenta como entero (en Python `bool` es subclase de `int`), igual que en
   `estructuras.valor_valido()`.
 
-**Verificación:** 21 tests pasando, ninguna función supera las 40 líneas, y se probó
-`reasignar_turno()` con una lista en memoria (la reserva en espera pasa a confirmada).
+**Verificación:** 25 tests pasando, ninguna función supera las 40 líneas. Se levantó la
+API y se consultó con `curl` (devuelve los 6 complejos), y se probó `reasignar_turno()` con una lista en memoria (la reserva en espera pasa a confirmada).
 
 **Modificaciones:** _(completar)_
 

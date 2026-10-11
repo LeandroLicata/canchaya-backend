@@ -121,6 +121,8 @@ def conectar():
 
 def inicializar_bd():
     """Crea las tablas de la base si todabia no existen"""
+    # [LEA] Si la base no existía, al final se llena con los JSON (ver importar_json).
+    nueva = not os.path.exists(RUTA_BD)
     conexion = conectar()
     conexion.execute("""
         CREATE TABLE IF NOT EXISTS complejos(
@@ -150,6 +152,8 @@ def inicializar_bd():
     """)
     conexion.commit()
     conexion.close()
+    if nueva:
+        importar_json()
  
     
 def guardar_tabla(tabla, filas):
@@ -227,3 +231,32 @@ def exportar_json():
     ok_reservas = escribir_json(RUTA_RESERVAS, cargar_tabla("reservas"))
     return ok_complejos and ok_reservas
     
+
+
+# [LEA] Agregadas para la API: la base está en el .gitignore, así que en un clon nuevo
+# arranca vacía y ni la consola ni la API tenían complejos. Es el camino inverso de
+# exportar_json(): la primera vez que se crea la base, se carga desde los JSON.
+def leer_json(ruta):
+    """Lee un archivo JSON directamente, sin pasar por la base.
+
+    Parámetros:
+        ruta: ruta del archivo a leer.
+    Devuelve:
+        La lista guardada en el archivo, o lista vacía si no existe o está dañado.
+    """
+    try:
+        with open(ruta, "r", encoding="utf-8") as archivo:
+            return json.load(archivo)
+    except (FileNotFoundError, json.JSONDecodeError, IOError, OSError):
+        return []
+
+
+def importar_json():
+    """Carga en la base el contenido de los archivos JSON de complejos y reservas.
+
+    Devuelve:
+        True si pudo importar las dos tablas, False si alguna falló.
+    """
+    ok_complejos = guardar_tabla("complejos", leer_json(RUTA_COMPLEJOS))
+    ok_reservas = guardar_tabla("reservas", leer_json(RUTA_RESERVAS))
+    return ok_complejos and ok_reservas

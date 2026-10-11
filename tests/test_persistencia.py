@@ -62,3 +62,19 @@ def test_cargar_json_inexistente(tmp_path):
     assert persistencia.cargar_json(ruta, []) == []
     assert os.path.exists(ruta) is True
     
+
+
+# [LEA] Prueba de importar_json(), agregada para la API.
+def test_base_nueva_se_llena_con_los_json(tmp_path, monkeypatch):
+    """La primera vez que se crea la base, toma los datos de los archivos JSON."""
+    ruta_complejos = str(tmp_path / "complejos.json")
+    complejos = [{"id": 1, "nombre": "Estadio 5", "zona": "Godoy Cruz", "canchas": 3,
+                  "tipo": "sintetica", "precio_hora": 18000}]
+    persistencia.escribir_json(ruta_complejos, complejos)
+    monkeypatch.setattr(persistencia, "RUTA_BD", str(tmp_path / "prueba.db"))
+    monkeypatch.setattr(persistencia, "RUTA_COMPLEJOS", ruta_complejos)
+    monkeypatch.setattr(persistencia, "RUTA_RESERVAS", str(tmp_path / "no_existe.json"))
+
+    assert persistencia.cargar_tabla("complejos") == complejos
+    assert persistencia.cargar_tabla("reservas") == []
+

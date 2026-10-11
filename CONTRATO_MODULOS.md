@@ -84,6 +84,7 @@ y `RUTA_GRAFICO`.
 | `exportar_csv(ruta, encabezados, filas)` | Cantidad de filas escritas, o `0` si falló. `filas` es una lista de listas. |
 | `registrar_log(accion, detalle="")` | `None`. Agrega al `.txt` una línea `AAAA-MM-DD HH:MM:SS \| accion \| detalle`. |
 | `ruta_reporte(fecha)` | La ruta del CSV de ese día: `datos/reporte_AAAA-MM-DD.csv`. |
+| `importar_json()` | `True` si pudo cargar en la base los JSON de complejos y reservas. Lo llama `inicializar_bd()` cuando la base no existía, para que un clon nuevo arranque con datos. Usa `leer_json(ruta)`, que lee el archivo sin pasar por la base. *(Agregadas por Leandro para la API.)* |
 
 Todo con bloque `with`. El programa tiene que arrancar aunque no exista ningún archivo.
 
