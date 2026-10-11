@@ -15,6 +15,10 @@ RUTA_RESERVAS = os.path.join(CARPETA_DATOS, "reservas.json")
 RUTA_LOG = os.path.join(CARPETA_DATOS, "log_operaciones.txt")
 RUTA_GRAFICO = os.path.join(CARPETA_GRAFICOS, "ocupacion.png")
 RUTA_BD = os.path.join(CARPETA_DATOS, "canchaya.db")
+TABLAS = {
+    RUTA_COMPLEJOS: "complejos",
+    RUTA_RESERVAS: "reservas"
+}
 
 def ruta_reporte(fecha):
     """Arma la ruta del reporte CSV de un día.
@@ -36,6 +40,8 @@ def cargar_json(ruta, por_defecto=None):
     Devuelve:
         El contenido del archivo, o por_defecto si no existe o está dañado.
     """
+    if ruta in TABLAS:
+        return cargar_tabla(TABLAS[ruta])
     try:
         with open(ruta, "r", encoding="utf-8") as archivo:
             return json.load(archivo)
