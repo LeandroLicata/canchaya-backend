@@ -63,15 +63,8 @@ def guardar_json(ruta, datos):
     """
     if ruta in TABLAS:
         return guardar_tabla(TABLAS[ruta], datos)
-    try:
-        carpeta = os.path.dirname(ruta)
-        if carpeta:
-            os.makedirs(carpeta, exist_ok=True)
-        with open(ruta, "w", encoding="utf-8") as archivo:
-            json.dump(datos, archivo, ensure_ascii=False, indent=2)
-        return True
-    except (IOError, OSError):
-        return False
+    return escribir_json(ruta, datos)
+
 
 
 def exportar_csv(ruta, encabezados, filas):
@@ -125,6 +118,7 @@ def conectar():
     conexion.row_factory = sqlite3.Row
     return conexion
 
+
 def inicializar_bd():
     """Crea las tablas de la base si todabia no existen"""
     conexion = conectar()
@@ -156,6 +150,7 @@ def inicializar_bd():
     """)
     conexion.commit()
     conexion.close()
+ 
     
 def guardar_tabla(tabla, filas):
     """Reemplaza todo el contenido de una tabla con las filas recibidads.
@@ -183,6 +178,7 @@ def guardar_tabla(tabla, filas):
     except sqlite3.Error:
         return False
 
+
 def cargar_tabla(tabla):
     """Devuelve todas las filas de una tabla como lista de diccionarios.
     
@@ -199,3 +195,35 @@ def cargar_tabla(tabla):
         return [dict(fila) for fila in filas]
     except sqlite3.Error:
         return []
+    
+
+def escribir_json(ruta, datos):
+    """Escribe datos en un archivo JSON, sin pasar por la base.
+    
+    Parametros:
+        ruta: rita del archivo a excribir.
+        datos: lista o diccionario a serializar.
+    Devuelve:
+        True si pudo guardar, False si fallo.
+    """
+    try:
+        carpeta = os.path.dirname(ruta)
+        if carpeta: 
+            os.makedirs(carpeta, exist_ok=True)
+        with open(ruta, "w", encoding="utf-8") as archivo:
+            json.dump(datos, archivo, ensure_ascii=False, indent=2)
+        return True
+    except (IOError, OSError):
+        return False
+    
+
+def exportar_json():
+    """Vuelca el contenido de la base a los archivos JSON.
+    
+    Devuelve:
+        True si pudo exportar los dos archivos, False si alguni fallo.
+    """
+    ok_complejos = escribir_json(RUTA_COMPLEJOS, cargar_tabla("complejos"))
+    ok_reservas = escribir_json(RUTA_RESERVAS, cargar_tabla("reservas"))
+    return ok_complejos and ok_reservas
+    
