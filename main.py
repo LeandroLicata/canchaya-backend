@@ -415,6 +415,8 @@ def main():
             persistencia.guardar_json(persistencia.RUTA_RESERVAS, lista_reservas)
 
     persistencia.registrar_log("cierre", "{0} reservas guardadas".format(len(lista_reservas)))
+    if not persistencia.exportar_json():
+        print("  No se pudieron actualizar los archivos JSON.")
     print("\n  Hasta luego.\n")
 
 
