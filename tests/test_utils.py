@@ -77,3 +77,12 @@ def test_campo_faltante_y_formato_invalido():
     del datos["email"]
     assert utils.validar_reserva(datos, COMPLEJOS) is not None
     assert utils.validar_reserva(["no", "es", "dict"], COMPLEJOS) is not None
+
+
+def test_validar_modificacion():
+    """Solo acepta jugadores en rango o comentarios de texto."""
+    assert utils.validar_modificacion("jugadores", 8) is None
+    assert utils.validar_modificacion("comentarios", "Traemos pelota") is None
+    assert utils.validar_modificacion("jugadores", 15) is not None
+    assert utils.validar_modificacion("comentarios", None) is not None
+    assert utils.validar_modificacion("hora", "18:00") is not None

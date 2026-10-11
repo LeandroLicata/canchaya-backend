@@ -33,6 +33,29 @@ def respuesta_error(mensaje, codigo):
     return jsonify({"error": mensaje}), codigo
 
 
+def leer_cuerpo():
+    """Lee el JSON que viene en el cuerpo del pedido.
+
+    No recibe parámetros: lo toma del pedido en curso.
+    Devuelve: el diccionario recibido, o None si no vino un objeto JSON válido.
+    """
+    datos = request.get_json(silent=True)
+    if not isinstance(datos, dict):
+        return None
+    return datos
+
+
+def guardar_reservas(lista_reservas):
+    """Guarda la lista de reservas en la base.
+
+    Parámetros: la lista de reservas actualizada.
+    Devuelve: None si pudo guardar, o la respuesta de error 500 lista para enviar.
+    """
+    if persistencia.guardar_json(persistencia.RUTA_RESERVAS, lista_reservas):
+        return None
+    return respuesta_error("No se pudieron guardar los cambios. Probá de nuevo.", 500)
+
+
 @app.errorhandler(404)
 def ruta_inexistente(error):
     """Responde en JSON cuando se pide una ruta que no existe.
@@ -115,11 +138,121 @@ def registrar_reserva():
                                "de espera.", 409)
     reserva = estructuras.crear_reserva(lista_reservas, datos)
     lista_reservas, estado = estructuras.agregar_reserva(lista_reservas, reserva)
-    if not persistencia.guardar_json(persistencia.RUTA_RESERVAS, lista_reservas):
-        return respuesta_error("No se pudo guardar la reserva. Probá de nuevo.", 500)
+    error_guardado = guardar_reservas(lista_reservas)
+    if error_guardado is not None:
+        return error_guardado
     persistencia.registrar_log("registrar_reserva", "#{0} {1} (web)".format(
         reserva["id"], estado))
     return jsonify(reserva), 201
+
+
+CAMPOS_BUSQUEDA = ("nombre_cliente", "email", "id_complejo", "fecha", "estado")
+CAMPOS_ORDEN = ("id", "fecha", "hora", "nombre_cliente", "fecha_registro")
+
+
+@app.route("/api/reservas", methods=["GET"])
+def listar_reservas():
+    """Lista las reservas, con búsqueda y orden opcionales.
+
+    Recibe por la URL: ?campo=...&valor=... para filtrar (con utils.buscar_reservas)
+    y ?orden=...&desc=1 para ordenar (con utils.ordenar_por; por defecto, por fecha).
+    Devuelve:
+        Lista JSON de reservas con código 200, o 400 si algún parámetro es inválido.
+    """
+    lista_reservas = persistencia.cargar_json(persistencia.RUTA_RESERVAS, [])
+    campo = request.args.get("campo", "")
+    valor = request.args.get("valor", "")
+    if campo:
+        if campo not in CAMPOS_BUSQUEDA:
+            return respuesta_error("No se puede buscar por ese campo.", 400)
+        if campo == "id_complejo":
+            try:
+                valor = int(valor)
+            except ValueError:
+                return respuesta_error("El id del complejo debe ser un número.", 400)
+        lista_reservas = utils.buscar_reservas(lista_reservas, campo, valor)
+    orden = request.args.get("orden", "fecha")
+    if orden not in CAMPOS_ORDEN:
+        return respuesta_error("No se puede ordenar por ese campo.", 400)
+    descendente = request.args.get("desc", "") == "1"
+    return jsonify(utils.ordenar_por(lista_reservas, orden, descendente)), 200
+
+
+@app.route("/api/reservas/<int:id_reserva>", methods=["GET"])
+def consultar_reserva(id_reserva):
+    """Devuelve una reserva por su id.
+
+    Parámetros: id_reserva, que viene en la ruta.
+    Devuelve: la reserva con código 200, o 404 si no existe.
+    """
+    lista_reservas = persistencia.cargar_json(persistencia.RUTA_RESERVAS, [])
+    reserva = estructuras.buscar_reserva_por_id(lista_reservas, id_reserva)
+    if reserva is None:
+        return respuesta_error("La reserva no existe.", 404)
+    return jsonify(reserva), 200
+
+
+@app.route("/api/reservas/<int:id_reserva>", methods=["PATCH"])
+def modificar_reserva(id_reserva):
+    """Modifica los jugadores o los comentarios de una reserva.
+
+    Recibe en el cuerpo un JSON {"campo": ..., "valor": ...}. Para cambiar de horario
+    se cancela y se reserva de nuevo, igual que en la consola.
+    Devuelve:
+        La reserva actualizada con código 200; 400 si los datos son inválidos, 404 si
+        no existe, 409 si está cancelada, 500 si no se pudo guardar.
+    """
+    datos = leer_cuerpo()
+    if datos is None:
+        return respuesta_error("Los datos tienen un formato inválido.", 400)
+    error = utils.validar_modificacion(datos.get("campo"), datos.get("valor"))
+    if error is not None:
+        return respuesta_error(error, 400)
+    lista_reservas = persistencia.cargar_json(persistencia.RUTA_RESERVAS, [])
+    reserva = estructuras.buscar_reserva_por_id(lista_reservas, id_reserva)
+    if reserva is None:
+        return respuesta_error("La reserva no existe.", 404)
+    lista_reservas, modificada = estructuras.modificar_reserva(
+        lista_reservas, id_reserva, datos["campo"], datos["valor"])
+    if not modificada:
+        return respuesta_error("No se puede modificar una reserva cancelada.", 409)
+    error_guardado = guardar_reservas(lista_reservas)
+    if error_guardado is not None:
+        return error_guardado
+    persistencia.registrar_log("modificar_reserva", "#{0} {1} (web)".format(
+        id_reserva, datos["campo"]))
+    return jsonify(reserva), 200
+
+
+@app.route("/api/reservas/<int:id_reserva>/cancelar", methods=["POST"])
+def cancelar_reserva(id_reserva):
+    """Cancela una reserva y pasa el turno al primero de la lista de espera.
+
+    Recibe en el cuerpo un JSON {"motivo": ...}.
+    Devuelve:
+        JSON {"reserva": la cancelada, "promovida": la que pasó a confirmada o null}
+        con código 200; 400 si falta el motivo, 404 si no existe, 409 si ya estaba
+        cancelada, 500 si no se pudo guardar.
+    """
+    datos = leer_cuerpo()
+    if datos is None or not utils.es_texto_valido(datos.get("motivo"), 3):
+        return respuesta_error("Indicá el motivo (al menos 3 caracteres).", 400)
+    lista_reservas = persistencia.cargar_json(persistencia.RUTA_RESERVAS, [])
+    reserva = estructuras.buscar_reserva_por_id(lista_reservas, id_reserva)
+    if reserva is None:
+        return respuesta_error("La reserva no existe.", 404)
+    lista_reservas, cancelada = estructuras.cancelar_reserva(
+        lista_reservas, id_reserva, datos["motivo"])
+    if not cancelada:
+        return respuesta_error("La reserva ya estaba cancelada.", 409)
+    lista_reservas, promovida = estructuras.promover_espera(lista_reservas, reserva)
+    error_guardado = guardar_reservas(lista_reservas)
+    if error_guardado is not None:
+        return error_guardado
+    persistencia.registrar_log("cancelar_reserva", "#{0} (web)".format(id_reserva))
+    if promovida is not None:
+        persistencia.registrar_log("confirmar_espera", "#{0} (web)".format(promovida["id"]))
+    return jsonify({"reserva": reserva, "promovida": promovida}), 200
 
 
 if __name__ == "__main__":

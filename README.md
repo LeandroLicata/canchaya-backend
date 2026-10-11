@@ -128,6 +128,10 @@ de entrada a la misma lógica.
 | `GET /api/complejos` | Lista de complejos |
 | `GET /api/complejos/<id>/disponibilidad?fecha=AAAA-MM-DD` | `horarios` del día y cuáles están `libres` |
 | `POST /api/reservas` | Crea la reserva (201). Si el horario está ocupado responde 409, salvo que venga `"aceptar_espera": true`, y entonces queda `en_espera` |
+| `GET /api/reservas?campo=&valor=&orden=&desc=1` | Reservas, con búsqueda opcional (por `nombre_cliente`, `email`, `id_complejo`, `fecha` o `estado`) y orden (por defecto, por fecha) |
+| `GET /api/reservas/<id>` | Una reserva |
+| `PATCH /api/reservas/<id>` | Cambia `jugadores` o `comentarios`: `{"campo": ..., "valor": ...}` |
+| `POST /api/reservas/<id>/cancelar` | Cancela con `{"motivo": ...}` y devuelve `{"reserva", "promovida"}`, el que pasó de la lista de espera a confirmado |
 
 Los errores siempre vuelven en JSON con la forma `{"error": "mensaje"}`.
 

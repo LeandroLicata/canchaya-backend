@@ -128,3 +128,72 @@ def test_horario_ocupado_pide_aceptar_la_espera(cliente):
     assert respuesta.get_json()["estado"] == "en_espera"
     assert len(persistencia.cargar_tabla("reservas")) == 2
 
+
+
+def test_listar_buscar_y_ordenar(cliente):
+    """Lista todas, filtra por cliente o complejo, y ordena por el campo pedido."""
+    cliente.post("/api/reservas", json=reserva_valida(hora="21:00"))
+    cliente.post("/api/reservas", json=reserva_valida(hora="18:00", id_complejo=2,
+                                                     nombre_cliente="Ana Gomez"))
+    assert len(cliente.get("/api/reservas").get_json()) == 2
+    por_nombre = cliente.get("/api/reservas?campo=nombre_cliente&valor=ana").get_json()
+    assert [r["nombre_cliente"] for r in por_nombre] == ["Ana Gomez"]
+    por_complejo = cliente.get("/api/reservas?campo=id_complejo&valor=1").get_json()
+    assert [r["id_complejo"] for r in por_complejo] == [1]
+    ordenadas = cliente.get("/api/reservas?orden=hora&desc=1").get_json()
+    assert [r["hora"] for r in ordenadas] == ["21:00", "18:00"]
+
+
+def test_listar_con_parametros_invalidos(cliente):
+    """Campo de búsqueda u orden desconocido, o id no numérico, dan 400."""
+    assert cliente.get("/api/reservas?campo=telefono&valor=261").status_code == 400
+    assert cliente.get("/api/reservas?campo=id_complejo&valor=uno").status_code == 400
+    assert cliente.get("/api/reservas?orden=email").status_code == 400
+
+
+def test_consultar_reserva(cliente):
+    """Devuelve la reserva pedida, o 404 si el id no existe."""
+    cliente.post("/api/reservas", json=reserva_valida())
+    assert cliente.get("/api/reservas/1").get_json()["nombre_cliente"] == "Lionel Perez"
+    assert cliente.get("/api/reservas/99").status_code == 404
+
+
+def test_modificar_reserva(cliente):
+    """Cambia jugadores o comentarios y lo guarda; otros campos o valores dan 400."""
+    cliente.post("/api/reservas", json=reserva_valida())
+    respuesta = cliente.patch("/api/reservas/1", json={"campo": "jugadores", "valor": 12})
+    assert respuesta.status_code == 200
+    assert respuesta.get_json()["jugadores"] == 12
+    assert persistencia.cargar_tabla("reservas")[0]["jugadores"] == 12
+    for cuerpo in ({"campo": "hora", "valor": "18:00"},
+                   {"campo": "jugadores", "valor": 20},
+                   {"campo": "comentarios", "valor": 5}):
+        assert cliente.patch("/api/reservas/1", json=cuerpo).status_code == 400
+    assert cliente.patch("/api/reservas/99",
+                         json={"campo": "jugadores", "valor": 8}).status_code == 404
+
+
+def test_cancelar_promueve_al_primero_en_espera(cliente):
+    """Al cancelar, el primero de la cola pasa a confirmado y se informa cuál fue."""
+    cliente.post("/api/reservas", json=reserva_valida())
+    cliente.post("/api/reservas", json=reserva_valida(aceptar_espera=True))
+    respuesta = cliente.post("/api/reservas/1/cancelar", json={"motivo": "Llueve"})
+    assert respuesta.status_code == 200
+    cuerpo = respuesta.get_json()
+    assert cuerpo["reserva"]["estado"] == "cancelada"
+    assert cuerpo["promovida"]["id"] == 2
+    estados = [r["estado"] for r in persistencia.cargar_tabla("reservas")]
+    assert estados == ["cancelada", "confirmada"]
+
+
+def test_cancelar_con_errores(cliente):
+    """Sin motivo da 400, id inexistente 404, y cancelar dos veces 409."""
+    cliente.post("/api/reservas", json=reserva_valida())
+    assert cliente.post("/api/reservas/1/cancelar", json={}).status_code == 400
+    assert cliente.post("/api/reservas/99/cancelar",
+                        json={"motivo": "Llueve"}).status_code == 404
+    cliente.post("/api/reservas/1/cancelar", json={"motivo": "Llueve"})
+    respuesta = cliente.post("/api/reservas/1/cancelar", json={"motivo": "Llueve"})
+    assert respuesta.status_code == 409
+    respuesta = cliente.patch("/api/reservas/1", json={"campo": "jugadores", "valor": 8})
+    assert respuesta.status_code == 409

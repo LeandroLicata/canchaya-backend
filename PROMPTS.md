@@ -445,6 +445,11 @@ conectó el formulario del frontend (`js/reservar.js` en el repositorio `canchay
 horario está ocupado, la API responde 409 y el sitio ofrece un botón para anotarse en la
 lista de espera; recién entonces reenvía la reserva con `"aceptar_espera": true`.
 
+Después sumó los endpoints de prioridad 2: listar con búsqueda y orden, consultar una
+reserva, modificarla (`PATCH`) y cancelarla, con la reasignación a la lista de espera. Para
+validar el valor nuevo agregó `utils.validar_modificacion()`, que también reusa
+`validar_reserva()` para no repetir la validación de jugadores y comentarios.
+
 Las funciones nuevas en `estructuras.py`, `utils.py` y `persistencia.py` llevan un
 comentario `[LEA]`, porque se escribieron en módulos de Federico, Gustavo y Gonzalo.
 Hay que avisarles.
@@ -456,7 +461,7 @@ Hay que avisarles.
 - `True` no cuenta como entero (en Python `bool` es subclase de `int`), igual que en
   `estructuras.valor_valido()`.
 
-**Verificación:** 30 tests pasando, ninguna función supera las 40 líneas. Se levantó la
+**Verificación:** 37 tests pasando, ninguna función supera las 40 líneas. Se levantó la
 API y se consultó con `curl` (devuelve los 6 complejos), y se recorrió el flujo del
 formulario con `curl` imitando al navegador: CORS, reserva confirmada, 409 y lista de
 espera, sobre una base temporal, y se probó `reasignar_turno()` con una lista en memoria (la reserva en espera pasa a confirmada).

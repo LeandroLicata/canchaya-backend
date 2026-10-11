@@ -288,10 +288,30 @@ def validar_reserva(datos, lista_complejos):
         return "La fecha no es válida o ya pasó (formato AAAA-MM-DD)."
     if datos.get("hora") not in estructuras.HORARIOS:
         return "El horario no es válido."
-    if not es_entero_en_rango(datos.get("jugadores"), estructuras.MIN_JUGADORES,
-                              estructuras.MAX_JUGADORES):
+    # Jugadores y comentarios se validan igual que al modificar una reserva.
+    error = validar_modificacion("jugadores", datos.get("jugadores"))
+    if error is None:
+        error = validar_modificacion("comentarios", datos.get("comentarios", ""))
+    return error
+
+
+# [LEA] Agregada para la API: la consola pide el valor nuevo con pedir_entero o
+# pedir_texto, pero la API lo recibe ya cargado y tiene que validarlo.
+def validar_modificacion(campo, valor):
+    """Valida el campo y el valor nuevo de una reserva que se quiere modificar.
+
+    Parámetros:
+        campo: nombre del campo a cambiar ("jugadores" o "comentarios").
+        valor: el valor nuevo, tal como llegó.
+    Devuelve:
+        None si se puede aplicar, o un texto con el error encontrado.
+    """
+    if campo not in estructuras.CAMPOS_EDITABLES:
+        return "Solo se pueden modificar los jugadores o los comentarios."
+    if campo == "jugadores" and not es_entero_en_rango(
+            valor, estructuras.MIN_JUGADORES, estructuras.MAX_JUGADORES):
         return "La cantidad de jugadores debe estar entre {0} y {1}.".format(
             estructuras.MIN_JUGADORES, estructuras.MAX_JUGADORES)
-    if not isinstance(datos.get("comentarios", ""), str):
+    if campo == "comentarios" and not isinstance(valor, str):
         return "Los comentarios deben ser texto."
     return None

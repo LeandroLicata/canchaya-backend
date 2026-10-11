@@ -121,6 +121,7 @@ Define además las constantes `HORARIOS`, `MIN_JUGADORES` y `MAX_JUGADORES`. Es 
 | `fila_csv(reserva, lista_complejos)` | Lista de valores de la reserva para el CSV, en el orden de los encabezados. |
 | `buscar_complejo(lista_complejos, id_complejo)` | El diccionario del complejo, o `None` si no existe. *(Agregada por Leandro para la API.)* |
 | `validar_reserva(datos, lista_complejos)` | `None` si todos los campos son válidos, o un texto con el primer error. La usa la API, que recibe la reserva entera en un JSON y no puede pedir los datos de a uno. Se apoya en `es_texto_valido(valor, largo_minimo)` y `es_entero_en_rango(valor, minimo, maximo)`. *(Agregadas por Leandro para la API.)* |
+| `validar_modificacion(campo, valor)` | `None` si el campo es editable y el valor es válido (jugadores entre `MIN_JUGADORES` y `MAX_JUGADORES`, comentarios de texto), o un texto con el error. `validar_reserva()` también la usa. *(Agregada por Leandro para la API.)* |
 
 ## `estadisticas.py` — Gustavo
 
