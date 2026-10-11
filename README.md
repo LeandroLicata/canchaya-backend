@@ -114,8 +114,23 @@ de entrada a la misma lógica.
 
 - Python 3.10 o superior
 - Bibliotecas estándar: `json`, `csv`, `datetime`, `os`
-- `matplotlib` (eje principal), `flask` y `flask-cors` (API), `pytest` (pruebas):
-  `pip install -r requirements.txt`
+- `matplotlib` (eje principal), `flask` y `flask-cors` (API), `pytest` (pruebas),
+  listadas en `requirements.txt`
+
+Las dependencias se instalan en un entorno virtual dentro del proyecto, para que todo el
+equipo use las mismas versiones sin tocar el Python de la máquina (la carpeta `.venv` está
+en el `.gitignore`). En PowerShell, desde la carpeta del proyecto:
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+Se crea una sola vez; después alcanza con activarlo (`.venv\Scripts\Activate.ps1`) en cada
+terminal nueva. En VS Code: `Ctrl+Shift+P` → *Python: Select Interpreter* → el de `.venv`,
+y la terminal integrada lo activa sola. Si PowerShell no deja ejecutar `Activate.ps1`,
+correr una vez `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
 
 ## Cómo se ejecuta
 
