@@ -8,10 +8,12 @@
 #
 # Se levanta con:  python api.py   (queda escuchando en http://localhost:5000)
 
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 
+import estructuras
 import persistencia
+import utils
 
 app = Flask(__name__)
 # El frontend se abre desde otro origen (Live Server, otro puerto), y sin CORS el
@@ -60,6 +62,64 @@ def listar_complejos():
     """
     lista_complejos = persistencia.cargar_json(persistencia.RUTA_COMPLEJOS, [])
     return jsonify(lista_complejos), 200
+
+
+@app.route("/api/complejos/<int:id_complejo>/disponibilidad", methods=["GET"])
+def consultar_disponibilidad(id_complejo):
+    """Devuelve los horarios del día y cuáles siguen libres en un complejo.
+
+    Parámetros:
+        id_complejo: viene en la ruta. La fecha llega como ?fecha=AAAA-MM-DD.
+    Devuelve:
+        JSON con id_complejo, fecha, horarios (todos) y libres, con código 200;
+        404 si el complejo no existe o 400 si la fecha es inválida.
+    """
+    lista_complejos = persistencia.cargar_json(persistencia.RUTA_COMPLEJOS, [])
+    if utils.buscar_complejo(lista_complejos, id_complejo) is None:
+        return respuesta_error("El complejo elegido no existe.", 404)
+    fecha = request.args.get("fecha", "")
+    if not utils.validar_fecha(fecha):
+        return respuesta_error("La fecha no es válida (formato AAAA-MM-DD).", 400)
+    lista_reservas = persistencia.cargar_json(persistencia.RUTA_RESERVAS, [])
+    libres = estructuras.horarios_disponibles(lista_reservas, id_complejo, fecha)
+    return jsonify({
+        "id_complejo": id_complejo,
+        "fecha": fecha,
+        "horarios": list(estructuras.HORARIOS),
+        "libres": libres,
+    }), 200
+
+
+@app.route("/api/reservas", methods=["POST"])
+def registrar_reserva():
+    """Registra una reserva nueva enviada por el formulario del sitio.
+
+    Recibe en el cuerpo un JSON con los campos de la reserva. Si el horario está
+    ocupado, solo se anota en la lista de espera cuando viene "aceptar_espera": true,
+    igual que en la consola, donde se le pregunta al usuario.
+    Devuelve:
+        La reserva creada con código 201 (su "estado" dice si quedó confirmada o en
+        espera); 400 si los datos son inválidos, 409 si el horario está ocupado y no
+        se aceptó la espera, 500 si no se pudo guardar.
+    """
+    datos = request.get_json(silent=True)
+    lista_complejos = persistencia.cargar_json(persistencia.RUTA_COMPLEJOS, [])
+    error = utils.validar_reserva(datos, lista_complejos)
+    if error is not None:
+        return respuesta_error(error, 400)
+    lista_reservas = persistencia.cargar_json(persistencia.RUTA_RESERVAS, [])
+    ocupado = estructuras.esta_ocupado(lista_reservas, datos["id_complejo"],
+                                       datos["fecha"], datos["hora"])
+    if ocupado and datos.get("aceptar_espera") is not True:
+        return respuesta_error("Ese horario está ocupado. Podés anotarte en la lista "
+                               "de espera.", 409)
+    reserva = estructuras.crear_reserva(lista_reservas, datos)
+    lista_reservas, estado = estructuras.agregar_reserva(lista_reservas, reserva)
+    if not persistencia.guardar_json(persistencia.RUTA_RESERVAS, lista_reservas):
+        return respuesta_error("No se pudo guardar la reserva. Probá de nuevo.", 500)
+    persistencia.registrar_log("registrar_reserva", "#{0} {1} (web)".format(
+        reserva["id"], estado))
+    return jsonify(reserva), 201
 
 
 if __name__ == "__main__":

@@ -126,6 +126,8 @@ de entrada a la misma lógica.
 | Endpoint | Qué devuelve |
 |---|---|
 | `GET /api/complejos` | Lista de complejos |
+| `GET /api/complejos/<id>/disponibilidad?fecha=AAAA-MM-DD` | `horarios` del día y cuáles están `libres` |
+| `POST /api/reservas` | Crea la reserva (201). Si el horario está ocupado responde 409, salvo que venga `"aceptar_espera": true`, y entonces queda `en_espera` |
 
 Los errores siempre vuelven en JSON con la forma `{"error": "mensaje"}`.
 
