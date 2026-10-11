@@ -114,7 +114,20 @@ de entrada a la misma lógica.
 
 - Python 3.10 o superior
 - Bibliotecas estándar: `json`, `csv`, `datetime`, `os`
-- `matplotlib` (eje principal) y `flask` (eje complementario): `pip install matplotlib flask`
+- `matplotlib` (eje principal), `flask` y `flask-cors` (API), `pytest` (pruebas):
+  `pip install -r requirements.txt`
+
+## Cómo se ejecuta
+
+- Aplicación de consola: `python main.py`
+- API para el frontend: `python api.py` (queda escuchando en `http://localhost:5000`)
+- Pruebas: `python -m pytest`
+
+| Endpoint | Qué devuelve |
+|---|---|
+| `GET /api/complejos` | Lista de complejos |
+
+Los errores siempre vuelven en JSON con la forma `{"error": "mensaje"}`.
 
 ## Créditos de uso de IA
 
