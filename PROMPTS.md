@@ -440,6 +440,11 @@ así que en un clon nuevo se crea vacía y nada la llenaba desde los JSON (tampo
 consola). Se agregó en `persistencia.py` `importar_json()` y `leer_json()`, y
 `inicializar_bd()` las llama cuando la base no existía.
 
+Por último agregó `GET /api/complejos/<id>/disponibilidad` y `POST /api/reservas`, y
+conectó el formulario del frontend (`js/reservar.js` en el repositorio `canchaya`). Si el
+horario está ocupado, la API responde 409 y el sitio ofrece un botón para anotarse en la
+lista de espera; recién entonces reenvía la reserva con `"aceptar_espera": true`.
+
 Las funciones nuevas en `estructuras.py`, `utils.py` y `persistencia.py` llevan un
 comentario `[LEA]`, porque se escribieron en módulos de Federico, Gustavo y Gonzalo.
 Hay que avisarles.
@@ -451,8 +456,10 @@ Hay que avisarles.
 - `True` no cuenta como entero (en Python `bool` es subclase de `int`), igual que en
   `estructuras.valor_valido()`.
 
-**Verificación:** 25 tests pasando, ninguna función supera las 40 líneas. Se levantó la
-API y se consultó con `curl` (devuelve los 6 complejos), y se probó `reasignar_turno()` con una lista en memoria (la reserva en espera pasa a confirmada).
+**Verificación:** 30 tests pasando, ninguna función supera las 40 líneas. Se levantó la
+API y se consultó con `curl` (devuelve los 6 complejos), y se recorrió el flujo del
+formulario con `curl` imitando al navegador: CORS, reserva confirmada, 409 y lista de
+espera, sobre una base temporal, y se probó `reasignar_turno()` con una lista en memoria (la reserva en espera pasa a confirmada).
 
 **Modificaciones:** _(completar)_
 
