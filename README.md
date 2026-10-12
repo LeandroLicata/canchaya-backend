@@ -116,6 +116,32 @@ de entrada a la misma lógica.
 - Bibliotecas estándar: `json`, `csv`, `datetime`, `os`
 - `matplotlib` (eje principal) y `flask` (eje complementario): `pip install matplotlib flask`
 
+## Pruebas automatizadas
+
+El proyecto utiliza `pytest` para ejecutar las pruebas automatizadas. Los archivos de prueba se encuentran en `tests/` y utilizan funciones independientes con aserciones `assert`.
+
+### Instalación de dependencias
+
+Desde la raíz del repositorio, ejecutar:
+
+```
+python -m pip install -r requirements.txt
+```
+
+### Ejecución de las pruebas
+
+Para ejecutar todas las pruebas:
+
+```
+python -m pytest -v
+```
+
+Para ejecutar únicamente las pruebas de estructuras:
+
+```
+python -m pytest tests/test_estructuras.py -v
+```
+
 ## Créditos de uso de IA
 
 El uso de herramientas de IA durante el desarrollo se documenta en `PROMPTS.md`.
