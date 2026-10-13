@@ -15,3 +15,6 @@ datos/reporte_*.csv
 datos/log_operaciones.txt
 graficos/*.png
 *.db
+
+# Copias de respaldo hechas a mano de los datos.
+datos/*.backup.json
