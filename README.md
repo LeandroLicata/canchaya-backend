@@ -136,7 +136,7 @@ correr una vez `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
 
 - Aplicación de consola: `python main.py`
 - API para el frontend: `python api.py` (queda escuchando en `http://localhost:5000`)
-- Pruebas: `python -m pytest`
+- Pruebas: `python -m pytest` (detalle en *Pruebas automatizadas*)
 
 | Endpoint | Qué devuelve |
 |---|---|
@@ -152,28 +152,12 @@ Los errores siempre vuelven en JSON con la forma `{"error": "mensaje"}`.
 
 ## Pruebas automatizadas
 
-El proyecto utiliza `pytest` para ejecutar las pruebas automatizadas. Los archivos de prueba se encuentran en `tests/` y utilizan funciones independientes con aserciones `assert`.
+Las pruebas usan `pytest` y están en `tests/`, escritas como funciones independientes con
+`assert`. Con el entorno virtual activado (ver *Requisitos*), desde la raíz del proyecto:
 
-### Instalación de dependencias
-
-Desde la raíz del repositorio, ejecutar:
-
-```
-python -m pip install -r requirements.txt
-```
-
-### Ejecución de las pruebas
-
-Para ejecutar todas las pruebas:
-
-```
-python -m pytest -v
-```
-
-Para ejecutar únicamente las pruebas de estructuras:
-
-```
-python -m pytest tests/test_estructuras.py -v
+```powershell
+python -m pytest -v                              # todas las pruebas
+python -m pytest tests/test_estructuras.py -v    # solo las de un módulo
 ```
 
 ## Créditos de uso de IA
