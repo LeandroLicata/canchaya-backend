@@ -144,8 +144,4 @@ def graficar_ocupacion(ocupacion, ruta):
         plt.close()
         return True
     except OSError:
-<<<<<<< HEAD
         return False
-=======
-        return False
->>>>>>> cf61975994176cc018f964b420ad41edd53d7b25
