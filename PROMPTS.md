@@ -408,9 +408,19 @@ partir de `fila.keys()`, que me lo explicó y adapté.
 
 **Estado:** en uso. Commits `dc147aa`, `bb37021`, `9c5300c` y `c03d6b6`.
 
-**Modificaciones:** Migré `tests/test_estructuras.py` de `unittest` a `pytest`, reemplazando las clases de prueba por funciones independientes y utilizando aserciones `assert`. Conservé las nueve pruebas existentes y verifiqué su ejecución. Incorporé `pytest` a las dependencias del proyecto y documenté en el README los comandos para instalar las dependencias y ejecutar las pruebas. También revisé el formato del archivo de pruebas para asegurar que termine con un salto de línea.
+---
 
-**Estado:** En uso. Las nueve pruebas de estructuras pasan correctamente con `pytest`. La suite completa del proyecto también fue verificada: 14 pruebas aprobadas, incluyendo las cinco de persistencia. Pendiente de commit de la migración y la documentación.
+**Fecha:** 13/10/2026 | **Herramienta:** ChatGPT | **Integrante:** Federico Cabrera
+
+**Prompt:** Solicité migrar las pruebas de `tests/test_estructuras.py` de `unittest` a `pytest`, respetando la convención del equipo de utilizar funciones de prueba independientes, sin clases `TestCase`, y aserciones `assert`. También pedí incorporar la dependencia correspondiente y documentar los comandos para ejecutar las pruebas.
+
+**Resultado:** Se migraron las nueve pruebas de estructuras a `pytest`, manteniendo los escenarios existentes. Se incorporó `pytest` a `requirements.txt` y se documentaron en `README.md` los comandos para instalar las dependencias y ejecutar las pruebas.
+
+**Modificaciones:** Se adaptó `tests/test_estructuras.py`, se incorporó `pytest` a las dependencias y se actualizaron las instrucciones de instalación y pruebas. La migración fue integrada en `main` junto con los cambios de la API.
+
+**Estado:** Integrado en `main`. El Scrum Master confirmó que la suite completa del proyecto ejecuta correctamente 37 pruebas aprobadas.
+
+
 
 ---
 
