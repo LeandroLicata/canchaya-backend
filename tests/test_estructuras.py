@@ -2,9 +2,7 @@
 # disponibilidad, cancelación, modificación y cola FIFO de lista de espera.
 # [FED] Federico Cabrera.
 #
-# Se ejecutan desde la raíz del proyecto con:  python -m unittest discover tests
-
-import unittest
+# Se ejecutan desde la raíz del proyecto con:  python -m pytest tests/
 
 import estructuras
 
@@ -42,103 +40,128 @@ def reservar(lista_reservas, hora="20:00"):
     return reserva, estado
 
 
-class TestAltaYDisponibilidad(unittest.TestCase):
-    """Alta de reservas, id autoincremental y horarios libres."""
+# --- Alta de reservas, id autoincremental y horarios libres ---
 
-    def test_id_autoincremental(self):
-        """El id es el máximo existente + 1, aunque falten ids intermedios."""
-        lista = [{"id": 1}, {"id": 5}]
-        reserva = estructuras.crear_reserva(lista, datos_de_prueba())
-        self.assertEqual(reserva["id"], 6)
-        self.assertEqual(estructuras.crear_reserva([], datos_de_prueba())["id"], 1)
-
-    def test_turno_libre_se_confirma_y_ocupado_va_a_espera(self):
-        """La primera reserva de un turno se confirma; la segunda queda en espera."""
-        lista = []
-        _, estado_1 = reservar(lista)
-        _, estado_2 = reservar(lista)
-        self.assertEqual(estado_1, estructuras.ESTADO_CONFIRMADA)
-        self.assertEqual(estado_2, estructuras.ESTADO_EN_ESPERA)
-        self.assertEqual(len(lista), 2)
-
-    def test_horarios_disponibles(self):
-        """Un turno confirmado desaparece de los horarios libres; uno en espera no."""
-        lista = []
-        reservar(lista, "20:00")
-        reservar(lista, "20:00")
-        libres = estructuras.horarios_disponibles(lista, 1, "2026-10-10")
-        self.assertEqual(libres, ["18:00", "19:00", "21:00", "22:00"])
-        otro_dia = estructuras.horarios_disponibles(lista, 1, "2026-10-11")
-        self.assertEqual(otro_dia, list(estructuras.HORARIOS))
+def test_id_autoincremental():
+    """El id es el máximo existente + 1, aunque falten ids intermedios."""
+    lista = [{"id": 1}, {"id": 5}]
+    reserva = estructuras.crear_reserva(lista, datos_de_prueba())
+    assert reserva["id"] == 6
+    assert estructuras.crear_reserva([], datos_de_prueba())["id"] == 1
 
 
-class TestCancelarYModificar(unittest.TestCase):
-    """Cancelación con motivo y modificación de campos editables."""
-
-    def test_cancelar_libera_el_turno(self):
-        """Al cancelar, el estado cambia, se guarda el motivo y el turno queda libre."""
-        lista = []
-        reserva, _ = reservar(lista)
-        lista, cancelada = estructuras.cancelar_reserva(lista, reserva["id"], " Lluvia ")
-        self.assertTrue(cancelada)
-        self.assertEqual(reserva["estado"], estructuras.ESTADO_CANCELADA)
-        self.assertEqual(reserva["motivo_cancelacion"], "Lluvia")
-        self.assertFalse(estructuras.esta_ocupado(lista, 1, "2026-10-10", "20:00"))
-
-    def test_cancelar_inexistente_o_repetida(self):
-        """No se puede cancelar un id que no existe ni una reserva ya cancelada."""
-        lista = []
-        reserva, _ = reservar(lista)
-        self.assertFalse(estructuras.cancelar_reserva(lista, 99, "x")[1])
-        estructuras.cancelar_reserva(lista, reserva["id"], "Lluvia")
-        self.assertFalse(estructuras.cancelar_reserva(lista, reserva["id"], "x")[1])
-
-    def test_modificar_solo_campos_editables(self):
-        """Se modifican jugadores y comentarios; el horario y los tipos inválidos no."""
-        lista = []
-        reserva, _ = reservar(lista)
-        modificar = estructuras.modificar_reserva
-        id_reserva = reserva["id"]
-        self.assertTrue(modificar(lista, id_reserva, "jugadores", 8)[1])
-        self.assertEqual(reserva["jugadores"], 8)
-        self.assertFalse(modificar(lista, id_reserva, "hora", "18:00")[1])
-        self.assertFalse(modificar(lista, id_reserva, "jugadores", "8")[1])
-        self.assertFalse(modificar(lista, 99, "comentarios", "hola")[1])
-        self.assertEqual(reserva["hora"], "20:00")
+def test_turno_libre_se_confirma_y_ocupado_va_a_espera():
+    """La primera reserva de un turno se confirma; la segunda queda en espera."""
+    lista = []
+    _, estado_1 = reservar(lista)
+    _, estado_2 = reservar(lista)
+    assert estado_1 == estructuras.ESTADO_CONFIRMADA
+    assert estado_2 == estructuras.ESTADO_EN_ESPERA
+    assert len(lista) == 2
 
 
-class TestListaDeEspera(unittest.TestCase):
-    """Cola FIFO: el primero en llegar es el primero en ser atendido."""
-
-    def test_siguiente_en_espera_es_fifo(self):
-        """Devuelve la reserva en espera más antigua del turno, no la más nueva."""
-        lista = []
-        reservar(lista)
-        primera, _ = reservar(lista)
-        segunda, _ = reservar(lista)
-        # Se fuerzan las fechas para que el orden no dependa del reloj.
-        primera["fecha_registro"] = "2026-09-22 19:00:00"
-        segunda["fecha_registro"] = "2026-09-22 18:00:00"
-        siguiente = estructuras.siguiente_en_espera(lista, 1, "2026-10-10", "20:00")
-        self.assertEqual(siguiente["id"], segunda["id"])
-
-    def test_sin_nadie_en_espera(self):
-        """Si no hay reservas en espera para el turno, devuelve None."""
-        lista = []
-        reservar(lista)
-        self.assertIsNone(estructuras.siguiente_en_espera(lista, 1, "2026-10-10", "20:00"))
-
-    def test_confirmar_espera_solo_si_se_libero(self):
-        """No se confirma mientras el turno esté ocupado; después de cancelar, sí."""
-        lista = []
-        titular, _ = reservar(lista)
-        en_espera, _ = reservar(lista)
-        self.assertFalse(estructuras.confirmar_espera(lista, en_espera["id"])[1])
-        estructuras.cancelar_reserva(lista, titular["id"], "No viene")
-        self.assertTrue(estructuras.confirmar_espera(lista, en_espera["id"])[1])
-        self.assertEqual(en_espera["estado"], estructuras.ESTADO_CONFIRMADA)
-        self.assertFalse(estructuras.confirmar_espera(lista, en_espera["id"])[1])
+def test_horarios_disponibles():
+    """Un turno confirmado desaparece de los horarios libres; uno en espera no."""
+    lista = []
+    reservar(lista, "20:00")
+    reservar(lista, "20:00")
+    libres = estructuras.horarios_disponibles(lista, 1, "2026-10-10")
+    assert libres == ["18:00", "19:00", "21:00", "22:00"]
+    otro_dia = estructuras.horarios_disponibles(lista, 1, "2026-10-11")
+    assert otro_dia == list(estructuras.HORARIOS)
 
 
-if __name__ == "__main__":
-    unittest.main()
+# --- Cancelación con motivo y modificación de campos editables ---
+
+def test_cancelar_libera_el_turno():
+    """Al cancelar, el estado cambia, se guarda el motivo y el turno queda libre."""
+    lista = []
+    reserva, _ = reservar(lista)
+    lista, cancelada = estructuras.cancelar_reserva(lista, reserva["id"], " Lluvia ")
+    assert cancelada
+    assert reserva["estado"] == estructuras.ESTADO_CANCELADA
+    assert reserva["motivo_cancelacion"] == "Lluvia"
+    assert not estructuras.esta_ocupado(lista, 1, "2026-10-10", "20:00")
+
+
+def test_cancelar_inexistente_o_repetida():
+    """No se puede cancelar un id que no existe ni una reserva ya cancelada."""
+    lista = []
+    reserva, _ = reservar(lista)
+    assert not estructuras.cancelar_reserva(lista, 99, "x")[1]
+    estructuras.cancelar_reserva(lista, reserva["id"], "Lluvia")
+    assert not estructuras.cancelar_reserva(lista, reserva["id"], "x")[1]
+
+
+def test_modificar_solo_campos_editables():
+    """Se modifican jugadores y comentarios; el horario y los tipos inválidos no."""
+    lista = []
+    reserva, _ = reservar(lista)
+    modificar = estructuras.modificar_reserva
+    id_reserva = reserva["id"]
+    assert modificar(lista, id_reserva, "jugadores", 8)[1]
+    assert reserva["jugadores"] == 8
+    assert not modificar(lista, id_reserva, "hora", "18:00")[1]
+    assert not modificar(lista, id_reserva, "jugadores", "8")[1]
+    assert not modificar(lista, 99, "comentarios", "hola")[1]
+    assert reserva["hora"] == "20:00"
+
+
+# --- Cola FIFO: el primero en llegar es el primero en ser atendido ---
+
+def test_siguiente_en_espera_es_fifo():
+    """Devuelve la reserva en espera más antigua del turno, no la más nueva."""
+    lista = []
+    reservar(lista)
+    primera, _ = reservar(lista)
+    segunda, _ = reservar(lista)
+    # Se fuerzan las fechas para que el orden no dependa del reloj.
+    primera["fecha_registro"] = "2026-09-22 19:00:00"
+    segunda["fecha_registro"] = "2026-09-22 18:00:00"
+    siguiente = estructuras.siguiente_en_espera(lista, 1, "2026-10-10", "20:00")
+    assert siguiente["id"] == segunda["id"]
+
+
+def test_sin_nadie_en_espera():
+    """Si no hay reservas en espera para el turno, devuelve None."""
+    lista = []
+    reservar(lista)
+    assert estructuras.siguiente_en_espera(lista, 1, "2026-10-10", "20:00") is None
+
+
+def test_confirmar_espera_solo_si_se_libero():
+    """No se confirma mientras el turno esté ocupado; después de cancelar, sí."""
+    lista = []
+    titular, _ = reservar(lista)
+    en_espera, _ = reservar(lista)
+    assert not estructuras.confirmar_espera(lista, en_espera["id"])[1]
+    estructuras.cancelar_reserva(lista, titular["id"], "No viene")
+    assert estructuras.confirmar_espera(lista, en_espera["id"])[1]
+    assert en_espera["estado"] == estructuras.ESTADO_CONFIRMADA
+    assert not estructuras.confirmar_espera(lista, en_espera["id"])[1]
+
+
+# --- Reasignación del turno a la lista de espera ---
+
+# [LEA] Pruebas de promover_espera(), agregada para la API.
+def test_promover_espera_confirma_al_primero():
+    """Al cancelar el titular, el primero de la cola pasa a confirmado."""
+    lista = []
+    titular, _ = reservar(lista)
+    primero, _ = reservar(lista)
+    segundo, _ = reservar(lista)
+    estructuras.cancelar_reserva(lista, titular["id"], "No viene")
+    lista, promovida = estructuras.promover_espera(lista, titular)
+    assert promovida is primero
+    assert primero["estado"] == estructuras.ESTADO_CONFIRMADA
+    assert segundo["estado"] == estructuras.ESTADO_EN_ESPERA
+
+
+def test_promover_espera_sin_cola_o_turno_ocupado():
+    """Devuelve None si no hay nadie esperando o si el turno sigue ocupado."""
+    lista = []
+    titular, _ = reservar(lista)
+    assert estructuras.promover_espera(lista, titular)[1] is None
+    en_espera, _ = reservar(lista)
+    assert estructuras.promover_espera(lista, titular)[1] is None
+    assert en_espera["estado"] == estructuras.ESTADO_EN_ESPERA

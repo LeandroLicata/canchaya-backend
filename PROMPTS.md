@@ -293,3 +293,194 @@ ejemplo, si ajusté los nombres de las claves según `CONTRATO_MODULOS.md`.)_
 
 **Estado:** _(completar: en uso / modificado parcialmente, y el commit donde quedó.)_
 
+
+---
+
+**Fecha:** 06/10/2026 | **Herramienta:** Claude (Claude Code) | **Integrante:** Leandro Licata
+
+**Prompt:** "¿Qué sería la lista de espera?", después "¿Cómo se suele manejar esto? ¿Qué
+es lo recomendable?" y por último "Implementalo". La pregunta surgió al probar el menú:
+en la opción 1 solo se podía entrar en lista de espera cuando los cinco horarios del día
+estaban ocupados, y al cancelar una reserva el turno quedaba libre hasta que alguien
+entrara a la opción 5.
+
+**Resultado:** Propuso manejar la lista de espera por horario y de forma voluntaria, como
+en los sistemas de reservas reales, y reasignar el turno automáticamente al cancelar. Lo
+implementó en `main.py` con tres funciones nuevas:
+
+- `mostrar_horarios()`: imprime la grilla de horarios con libre/ocupado. La usan las
+  opciones 1 y 2, así que se sacó el bucle que estaba repetido en
+  `flujo_consultar_disponibilidad()`.
+- `elegir_horario()`: deja elegir cualquiera de los cinco horarios. Si el elegido está
+  ocupado, pregunta "¿Querés anotarte en lista de espera? (s/n)"; con "n" vuelve a pedir
+  el horario. El prompt indica el formato: `Horario (HH:MM):`.
+- `promover_espera()`: al cancelar, busca al primero de la cola de ese turno con
+  `estructuras.siguiente_en_espera()`, lo confirma con `estructuras.confirmar_espera()`
+  y lo muestra en pantalla.
+
+`flujo_registrar_reserva()` y `flujo_cancelar_reserva()` pasaron a usar estas funciones,
+y se quitó el aviso "Revisá la opción 5". La opción 5 quedó como consulta de la cola y
+respaldo manual. No se tocó ningún otro módulo: todo usa funciones que ya existían en
+`estructuras.py` y `utils.py`.
+
+**Decisiones de diseño que hay que poder explicar en la defensa:**
+
+- La cola es FIFO por turno (complejo, fecha y hora): sale primero el que se anotó
+  primero, según `fecha_registro` y, si empatan, el id.
+- La reasignación al cancelar se hace en `main.py` llamando a funciones de
+  `estructuras.py`, sin lógica de cálculo propia, para respetar la regla de que `main.py`
+  solo maneja menú y flujo.
+- `confirmar_espera()` vuelve a verificar que el turno esté libre, así que nunca puede
+  haber dos reservas confirmadas para el mismo turno.
+
+**Verificación:** la IA corrió el programa sobre una copia del proyecto con datos vacíos:
+reserva confirmada a las 20:00, segunda reserva para el mismo turno aceptando la lista
+de espera (queda `en_espera`) y cancelación de la primera (la segunda pasa sola a
+`confirmada`). Probó también entradas inválidas: horario `20`, respuesta distinta de
+s/n y respuesta "n". Comprobó que ninguna función supere las 40 líneas (la más larga
+tiene 29) y que los tests de `estructuras` sigan pasando.
+
+**Modificaciones:** Probé manualmente el programa y todo funcionó correctamente, así que
+no le hice cambios al código generado.
+
+**Estado:** en uso, sin modificaciones. Commit `b40857f`.
+
+
+---
+
+**Fecha:** 10-11/10/2026 | **Herramienta:** Claude | **Integrante:** Gonzalo Tapia
+
+**Prompt:** Le pasé la tarea que me asignó Leandro (migrar la persistencia de JSON a
+SQLite) con el pedido de ir paso a paso y escribir yo el código. A mitad de la sesión le
+tuve que pedir que fuera más didáctico, porque me estaba dando funciones de seis pasos
+que yo entregaba a medias.
+
+**Resultado:** No generó el módulo. Diseñamos juntos las dos tablas a partir de los
+diccionarios del contrato y después fui escribiendo las funciones de a una, probando cada
+una antes de seguir: `conectar()`, `inicializar_bd()`, `guardar_tabla()`, `cargar_tabla()`,
+`escribir_json()` y `exportar_json()`.
+
+**Decisiones que tomé y tengo que poder defender:**
+
+- El `id` es `PRIMARY KEY` sin `AUTOINCREMENT`, porque `crear_reserva()` de Federico ya
+  calcula el id como máximo + 1. Si la base también los generara, habría dos fuentes
+  compitiendo.
+- Dejé `email` y `telefono` como `NOT NULL`. La IA sugería sacarlos para no complicar las
+  inserciones; no le hice caso, porque sin esos datos no hay forma de notificar al cliente
+  ni de llamarlo si no se presenta. Igual el `NOT NULL` no rechaza la cadena vacía, así
+  que la validación de `utils.py` sigue siendo la que hace el trabajo real.
+- Las fechas y horas van como `TEXT`: SQLite no tiene tipo fecha, y el formato AAAA-MM-DD
+  ordenado como texto da el mismo resultado que ordenado como fecha.
+- Los valores se insertan con parámetros `?` y nunca concatenados en el SQL, para evitar
+  inyección. Con Flask en camino deja de ser teórico.
+- El `.db` va en el `.gitignore`: es un archivo generado y binario, y git no puede
+  resolver conflictos ahí.
+- Elegí que la exportación a JSON se dispare desde `main.py` al salir, en lugar de hacerla
+  automática en cada guardado. Tiene el costo de depender de una línea que agregue
+  Leandro, pero hace una sola exportación por sesión en vez de una por operación.
+
+**Errores encontrados durante la sesión:**
+
+- En la tabla `reservas` puse primero `id_complejo INTEGER PRIMARY KEY`. Eso habría
+  impedido tener dos reservas en el mismo complejo: `id_complejo` es una referencia a otra
+  tabla, no la clave de la reserva.
+- Escribí `SELECT FROM` sin el asterisco en `cargar_tabla()`. La función devolvía lista
+  vacía sin explicación, porque el `except sqlite3.Error` capturaba el error de sintaxis y
+  lo convertía en el valor neutro que pide el contrato. Lo encontré corriendo la consulta
+  a mano sin el `try`. Es la segunda vez en la misma sesión que un `except` me esconde un
+  error, así que me quedó el método.
+- La IA diagnosticó mal un problema: atribuyó a OneDrive que la base perdiera las tablas.
+  Lo verifiqué con `dir` y la base estaba intacta; el problema era el `SELECT` de arriba.
+- Tipos inexistentes en el `CREATE TABLE` (`TIME`, `INTEFER`). SQLite los acepta sin
+  avisar, así que no se notan hasta que los datos salen raros. Los verifiqué consultando
+  `sqlite_master`.
+- Al mover el cuerpo de `guardar_json()` a `escribir_json()` quedaron diez líneas de
+  código muerto después del `return`. Las borré.
+
+**Verificación:** probé cada función suelta con `python -c` antes de integrarla, y corrí
+`python main.py` completo antes de cada commit. La prueba final fue registrar una reserva,
+salir, volver a entrar y comprobar que seguía ahí y que no estaba en el JSON: eso confirma
+que sale de la base.
+
+**Modificaciones:** escribí todas las funciones yo salvo `conectar()`, `escribir_json()`
+(que es mi `guardar_json` original movida de lugar) y el armado del `INSERT` dinámico a
+partir de `fila.keys()`, que me lo explicó y adapté.
+
+**Estado:** en uso. Commits `dc147aa`, `bb37021`, `9c5300c` y `c03d6b6`.
+
+---
+
+**Fecha:** 13/10/2026 | **Herramienta:** ChatGPT | **Integrante:** Federico Cabrera
+
+**Prompt:** Solicité migrar las pruebas de `tests/test_estructuras.py` de `unittest` a `pytest`, respetando la convención del equipo de utilizar funciones de prueba independientes, sin clases `TestCase`, y aserciones `assert`. También pedí incorporar la dependencia correspondiente y documentar los comandos para ejecutar las pruebas.
+
+**Resultado:** Se migraron las nueve pruebas de estructuras a `pytest`, manteniendo los escenarios existentes. Se incorporó `pytest` a `requirements.txt` y se documentaron en `README.md` los comandos para instalar las dependencias y ejecutar las pruebas.
+
+**Modificaciones:** Se adaptó `tests/test_estructuras.py`, se incorporó `pytest` a las dependencias y se actualizaron las instrucciones de instalación y pruebas. La migración fue integrada en `main` junto con los cambios de la API.
+
+**Estado:** Integrado en `main`. El Scrum Master confirmó que la suite completa del proyecto ejecuta correctamente 37 pruebas aprobadas.
+
+
+
+---
+
+**Fecha:** 11/10/2026 | **Herramienta:** Claude (Claude Code) | **Integrante:** Leandro Licata
+
+**Prompt:** "Tengo que implementar Flask o FastAPI para conectar con el frontend, ¿me
+ayudarías a decidir cuál usar?", después "Ok, usemos Flask, ¿me harías un plan de
+implementación?" y por último "Vamos a hacer nosotros lo que hay que resolver antes, ya
+que Fede y Gus están ocupados".
+
+**Resultado:** Recomendó Flask y no FastAPI, porque los modelos de Pydantic son clases y la
+consigna prohíbe la POO. Armó un plan de la API por etapas y marcó tres cosas a resolver
+antes de escribir los endpoints. Resolvió las dos que están en el backend:
+
+- `estructuras.py`: pasan acá `MIN_JUGADORES` y `MAX_JUGADORES` (antes en `main.py`), y se
+  agrega `promover_espera(lista_reservas, reserva)`, que es la reasignación del turno
+  que antes estaba en `main.py`, ahora sin los `print`, para que la consola y la API la
+  compartan.
+- `utils.py`: `buscar_complejo()` (`_nombre_complejo()` pasa a usarla) y
+  `validar_reserva(datos, lista_complejos)`, con dos auxiliares (`es_texto_valido()`,
+  `es_entero_en_rango()`). La API recibe la reserva entera en un JSON y no puede pedir
+  los datos de a uno con reintento como la consola: la valida de una sola vez y devuelve
+  el primer error encontrado, o `None`.
+- `main.py`: `promover_espera()` pasa a llamarse `reasignar_turno()` y solo imprime lo que
+  devuelve `estructuras.promover_espera()`; `elegir_complejo()` usa `buscar_complejo()`.
+- Tests: dos casos nuevos en `test_estructuras.py` y un archivo nuevo, `test_utils.py`.
+
+Después armó el esqueleto de `api.py` (CORS, errores en JSON y `GET /api/complejos`),
+`requirements.txt` y `tests/test_api.py`. Al probar la API con el servidor levantado,
+`/api/complejos` devolvía una lista vacía: la base `canchaya.db` está en el `.gitignore`,
+así que en un clon nuevo se crea vacía y nada la llenaba desde los JSON (tampoco andaba la
+consola). Se agregó en `persistencia.py` `importar_json()` y `leer_json()`, y
+`inicializar_bd()` las llama cuando la base no existía.
+
+Por último agregó `GET /api/complejos/<id>/disponibilidad` y `POST /api/reservas`, y
+conectó el formulario del frontend (`js/reservar.js` en el repositorio `canchaya`). Si el
+horario está ocupado, la API responde 409 y el sitio ofrece un botón para anotarse en la
+lista de espera; recién entonces reenvía la reserva con `"aceptar_espera": true`.
+
+Después sumó los endpoints de prioridad 2: listar con búsqueda y orden, consultar una
+reserva, modificarla (`PATCH`) y cancelarla, con la reasignación a la lista de espera. Para
+validar el valor nuevo agregó `utils.validar_modificacion()`, que también reusa
+`validar_reserva()` para no repetir la validación de jugadores y comentarios.
+
+Las funciones nuevas en `estructuras.py`, `utils.py` y `persistencia.py` llevan un
+comentario `[LEA]`, porque se escribieron en módulos de Federico, Gustavo y Gonzalo.
+Hay que avisarles.
+
+**Decisiones de diseño que hay que poder explicar en la defensa:**
+
+- `validar_reserva()` no convierte tipos: si `jugadores` llega como `"10"` en vez de `10`,
+  es un error. El frontend tiene que mandar números, y así no hace falta un `try/except`.
+- `True` no cuenta como entero (en Python `bool` es subclase de `int`), igual que en
+  `estructuras.valor_valido()`.
+
+**Verificación:** 37 tests pasando, ninguna función supera las 40 líneas. Se levantó la
+API y se consultó con `curl` (devuelve los 6 complejos), y se recorrió el flujo del
+formulario con `curl` imitando al navegador: CORS, reserva confirmada, 409 y lista de
+espera, sobre una base temporal, y se probó `reasignar_turno()` con una lista en memoria (la reserva en espera pasa a confirmada).
+
+**Modificaciones:** _(completar)_
+
+**Estado:** _(completar)_

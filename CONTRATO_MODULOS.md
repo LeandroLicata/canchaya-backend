@@ -84,6 +84,7 @@ y `RUTA_GRAFICO`.
 | `exportar_csv(ruta, encabezados, filas)` | Cantidad de filas escritas, o `0` si falló. `filas` es una lista de listas. |
 | `registrar_log(accion, detalle="")` | `None`. Agrega al `.txt` una línea `AAAA-MM-DD HH:MM:SS \| accion \| detalle`. |
 | `ruta_reporte(fecha)` | La ruta del CSV de ese día: `datos/reporte_AAAA-MM-DD.csv`. |
+| `importar_json()` | `True` si pudo cargar en la base los JSON de complejos y reservas. Lo llama `inicializar_bd()` cuando la base no existía, para que un clon nuevo arranque con datos. Usa `leer_json(ruta)`, que lee el archivo sin pasar por la base. *(Agregadas por Leandro para la API.)* |
 
 Todo con bloque `with`. El programa tiene que arrancar aunque no exista ningún archivo.
 
@@ -99,9 +100,10 @@ Todo con bloque `with`. El programa tiene que arrancar aunque no exista ningún 
 | `siguiente_en_espera(lista_reservas, id_complejo, fecha, hora)` | La primera reserva `en_espera` de ese turno (FIFO, por `fecha_registro`), o `None`. |
 | `modificar_reserva(lista_reservas, id_reserva, campo, valor)` | Tupla `(lista_reservas, True/False)`. Solo se modifican `jugadores` y `comentarios`; para cambiar de horario se cancela y se reserva de nuevo. |
 | `confirmar_espera(lista_reservas, id_reserva)` | Tupla `(lista_reservas, True/False)`. Pasa una reserva de `en_espera` a `confirmada` cuando el turno quedó libre. |
+| `promover_espera(lista_reservas, reserva)` | Tupla `(lista_reservas, promovida)`. Confirma al primero de la cola del turno que liberó `reserva`; `promovida` es esa reserva, o `None` si no había nadie o el turno sigue ocupado. *(Agregada por Leandro para la API.)* |
 
-Define además la constante `HORARIOS`. Es el módulo donde vive la **cola FIFO**: al cancelarse una reserva, `main.py` pregunta
-por `siguiente_en_espera()` y le ofrece el lugar.
+Define además las constantes `HORARIOS`, `MIN_JUGADORES` y `MAX_JUGADORES`. Es el módulo donde vive la **cola FIFO**: al cancelarse una reserva, `main.py` y la API llaman a
+`promover_espera()`, que le pasa el lugar al primero de la cola.
 
 ## `utils.py` — Gustavo
 
@@ -117,6 +119,9 @@ por `siguiente_en_espera()` y le ofrece el lugar.
 | `ordenar_por(lista, campo, descendente=False)` | Lista ordenada. **Algoritmo propio de inserción**, no `sorted()`: suma puntos en la rúbrica. |
 | `formatear_reserva(reserva, lista_complejos)` | Cadena de una línea, lista para imprimir, con el nombre del complejo en vez del id. |
 | `fila_csv(reserva, lista_complejos)` | Lista de valores de la reserva para el CSV, en el orden de los encabezados. |
+| `buscar_complejo(lista_complejos, id_complejo)` | El diccionario del complejo, o `None` si no existe. *(Agregada por Leandro para la API.)* |
+| `validar_reserva(datos, lista_complejos)` | `None` si todos los campos son válidos, o un texto con el primer error. La usa la API, que recibe la reserva entera en un JSON y no puede pedir los datos de a uno. Se apoya en `es_texto_valido(valor, largo_minimo)` y `es_entero_en_rango(valor, minimo, maximo)`. *(Agregadas por Leandro para la API.)* |
+| `validar_modificacion(campo, valor)` | `None` si el campo es editable y el valor es válido (jugadores entre `MIN_JUGADORES` y `MAX_JUGADORES`, comentarios de texto), o un texto con el error. `validar_reserva()` también la usa. *(Agregada por Leandro para la API.)* |
 
 ## `estadisticas.py` — Gustavo
 
