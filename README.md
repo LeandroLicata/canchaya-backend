@@ -150,6 +150,32 @@ correr una vez `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
 
 Los errores siempre vuelven en JSON con la forma `{"error": "mensaje"}`.
 
+## Pruebas automatizadas
+
+El proyecto utiliza `pytest` para ejecutar las pruebas automatizadas. Los archivos de prueba se encuentran en `tests/` y utilizan funciones independientes con aserciones `assert`.
+
+### Instalación de dependencias
+
+Desde la raíz del repositorio, ejecutar:
+
+```
+python -m pip install -r requirements.txt
+```
+
+### Ejecución de las pruebas
+
+Para ejecutar todas las pruebas:
+
+```
+python -m pytest -v
+```
+
+Para ejecutar únicamente las pruebas de estructuras:
+
+```
+python -m pytest tests/test_estructuras.py -v
+```
+
 ## Créditos de uso de IA
 
 El uso de herramientas de IA durante el desarrollo se documenta en `PROMPTS.md`.

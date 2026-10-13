@@ -407,6 +407,11 @@ que sale de la base.
 partir de `fila.keys()`, que me lo explicó y adapté.
 
 **Estado:** en uso. Commits `dc147aa`, `bb37021`, `9c5300c` y `c03d6b6`.
+
+**Modificaciones:** Migré `tests/test_estructuras.py` de `unittest` a `pytest`, reemplazando las clases de prueba por funciones independientes y utilizando aserciones `assert`. Conservé las nueve pruebas existentes y verifiqué su ejecución. Incorporé `pytest` a las dependencias del proyecto y documenté en el README los comandos para instalar las dependencias y ejecutar las pruebas. También revisé el formato del archivo de pruebas para asegurar que termine con un salto de línea.
+
+**Estado:** En uso. Las nueve pruebas de estructuras pasan correctamente con `pytest`. La suite completa del proyecto también fue verificada: 14 pruebas aprobadas, incluyendo las cinco de persistencia. Pendiente de commit de la migración y la documentación.
+
 ---
 
 **Fecha:** 11/10/2026 | **Herramienta:** Claude (Claude Code) | **Integrante:** Leandro Licata
