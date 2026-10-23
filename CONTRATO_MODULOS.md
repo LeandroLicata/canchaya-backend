@@ -74,8 +74,10 @@ HORARIOS = ("18:00", "19:00", "20:00", "21:00", "22:00")
 
 ## `persistencia.py` — Gonzalo
 
-Constantes que expone: `CARPETA_DATOS`, `RUTA_COMPLEJOS`, `RUTA_RESERVAS`, `RUTA_LOG`
-y `RUTA_GRAFICO`.
+Constantes que expone: `CARPETA_DATOS`, `RUTA_COMPLEJOS`, `RUTA_RESERVAS`, `RUTA_LOG`,
+`RUTA_GRAFICO` (ocupación por horario, `graficos/ocupacion.png`) y
+`RUTA_GRAFICO_INGRESOS` (ingresos por complejo, `graficos/ingresos.png`). *(La segunda se
+agrega para el Hito 2; las dos se arman sobre `CARPETA_GRAFICOS`, como la primera.)*
 
 | Función | Devuelve |
 |---|---|
@@ -128,10 +130,19 @@ Define además las constantes `HORARIOS`, `MIN_JUGADORES` y `MAX_JUGADORES`. Es 
 | Función | Devuelve |
 |---|---|
 | `ocupacion_por_horario(lista_reservas)` | Diccionario `{"18:00": 4, "19:00": 7, ...}`. |
-| `ingresos_por_complejo(lista_reservas, lista_complejos)` | Diccionario `{"Estadio 5": 54000, ...}`, con las confirmadas por el precio por hora. |
+| `ingresos_por_complejo(lista_reservas, lista_complejos)` | Diccionario `{"Estadio 5": 54000, ...}`, con las confirmadas por el precio por hora. Busca cada complejo con `utils.buscar_complejo()`. |
 | `ranking_complejos(lista_reservas, lista_complejos, tope=3)` | Lista de tuplas `(nombre, cantidad)` ordenada de mayor a menor. |
 | `porcentaje_cancelaciones(lista_reservas)` | Número con un decimal. `0.0` si no hay reservas (ojo con la división por cero). |
-| `graficar_ocupacion(ocupacion, ruta)` | `True` si generó el PNG. Es el eje de investigación (matplotlib). |
+| `graficar_barras(datos, titulo, etiqueta_x, etiqueta_y, ruta)` | `True` si generó el PNG, `False` si matplotlib no está instalado o no pudo escribir el archivo. `datos` es un diccionario `{etiqueta: valor}`; cada clave es una barra. Es la parte común de los dos gráficos, para no repetir el código de matplotlib. |
+| `graficar_ocupacion(ocupacion, ruta)` | `True` si generó el PNG. Recibe lo que devuelve `ocupacion_por_horario()` y llama a `graficar_barras()`. |
+| `graficar_ingresos(ingresos, ruta)` | `True` si generó el PNG. Recibe lo que devuelve `ingresos_por_complejo()` y llama a `graficar_barras()`. |
+
+Los dos gráficos son el eje de investigación (Opción D — matplotlib), que pide **al menos
+2 gráficos exportados como PNG**. matplotlib se importa solo dentro de `graficar_barras()`,
+para que el resto del programa funcione aunque no esté instalado.
+
+*Hito 2:* `buscar_complejo_por_id()` se elimina porque repetía `utils.buscar_complejo()`.
+La consigna no permite código duplicado.
 
 ## `main.py` — Leandro
 
@@ -142,7 +153,7 @@ Solo menú y flujo. Una función por opción, que pide los datos con `utils`, ll
 |---|---|
 | `mostrar_menu()` | Imprime las opciones. |
 | `mostrar_submenu_consultas()` | Imprime el submenú de búsquedas. |
-| `flujo_registrar_reserva(...)`, `flujo_consultar_disponibilidad(...)`, `flujo_consultas(...)`, `flujo_modificar_cancelar(...)`, `flujo_lista_espera(...)`, `flujo_estadisticas(...)`, `flujo_exportar_csv(...)` | Una por cada opción del menú. |
+| `flujo_registrar_reserva(...)`, `flujo_consultar_disponibilidad(...)`, `flujo_consultas(...)`, `flujo_modificar_cancelar(...)`, `flujo_lista_espera(...)`, `flujo_estadisticas(...)`, `flujo_exportar_csv(...)` | Una por cada opción del menú. `flujo_estadisticas()` genera los dos gráficos, con `RUTA_GRAFICO` y `RUTA_GRAFICO_INGRESOS`. |
 | `main()` | Carga los datos, corre el bucle `while` y guarda al salir. |
 
 ## Control de la consigna
@@ -150,10 +161,12 @@ Solo menú y flujo. Una función por opción, que pide los datos con `utils`, ll
 | Requisito | Estado |
 |---|---|
 | Mínimo 4 módulos | 5 |
-| Mínimo 10 funciones propias | 31 previstas |
+| Mínimo 10 funciones propias | 67 sin contar la API (79 con `api.py`) |
 | Al menos 3 funciones por módulo (salvo `main.py`) | Cumple en los cuatro |
-| Menú con 5+ funcionalidades y un submenú | 7 opciones + submenú de consultas |
+| Menú con 5+ funcionalidades y un submenú | 7 opciones + submenús de consultas y de modificar/cancelar |
 | 1 búsqueda con filtro | `buscar_reservas()` |
 | Ordenamiento propio | `ordenar_por()`, por inserción |
 | Mínimo 2 estadísticas | 4 |
-| Persistencia JSON + CSV + TXT | `persistencia.py` completo |
+| Persistencia JSON + CSV + TXT | `persistencia.py` completo (más SQLite) |
+| Eje D: al menos 2 gráficos PNG | `graficar_ocupacion()` y `graficar_ingresos()` *(la segunda, pendiente)* |
+| Mínimo 5 pruebas unitarias | 37 con pytest; falta `test_estadisticas.py` |
