@@ -178,9 +178,17 @@ unitarias con `unittest`.
 el árbol sintáctico que todas las funciones tengan docstring, que ninguna supere las 40
 líneas (la más larga tiene 26) y que el módulo no use `print()`.
 
-**Modificaciones:** _(completar: qué cambié al leer y probar el código, y por qué.)_
+**Modificaciones:** No cambié la lógica generada: las ocho funciones del contrato y las tres
+auxiliares quedaron tal como las propuso la IA, después de comprobar que las 9 pruebas
+pasaban (commits `a0b2af0` a `e8f8a24`). Después hubo dos cambios sobre el módulo. El 11/10
+migré `tests/test_estructuras.py` de `unittest` a `pytest` para que corriera con el resto
+de la suite (commit `228e40d`, registrado en la entrada del 13/10). Leandro agregó en
+`estructuras.py` las constantes `MIN_JUGADORES` y `MAX_JUGADORES` y la función
+`promover_espera()`, que necesitaba la API, con 2 pruebas nuevas (commit `4b7fe65`).
 
-**Estado:** _(completar)_
+**Estado:** en uso, sin modificaciones en la lógica generada. Lo usan `main.py` y `api.py`.
+Las 11 pruebas de `test_estructuras.py` pasan dentro de la suite de 37. Commits `a0b2af0`
+a `054e6ee`.
 
 ---
 
