@@ -217,6 +217,7 @@ def escribir_json(ruta, datos):
             os.makedirs(carpeta, exist_ok=True)
         with open(ruta, "w", encoding="utf-8") as archivo:
             json.dump(datos, archivo, ensure_ascii=False, indent=2)
+            archivo.write("\n")
         return True
     except (IOError, OSError):
         return False
