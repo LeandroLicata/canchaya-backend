@@ -145,31 +145,9 @@ Bombonerita en `datos/complejos.json`.
 
 **Fecha:** 22/09/2026 | **Herramienta:** Claude | **Integrante:** Federico Cabrera
 
-**Prompt:**
-
-> Estoy trabajando en el proyecto CanchaYa, una aplicación de gestión de reservas de canchas deportivas desarrollada en Python para la asignatura Práctica Profesional I.
->
-> Mi responsabilidad es implementar el módulo estructuras.py, encargado de gestionar las reservas, consultar la disponibilidad, modificar y cancelar reservas, y administrar la lista de espera mediante una política FIFO (First In, First Out).
->
-> Antes de realizar cambios, analizá el archivo CLAUDE.md, el contrato de módulos CONTRATO_MODULOS.md y la integración existente en main.py. Utilizá esos archivos como fuente de los requisitos y respetá las interfaces definidas por el equipo.
->
-> Objetivos de implementación:
->
-> 1. Implementar las funciones de estructuras.py especificadas en el contrato, manteniendo la compatibilidad con los módulos que las utilizan.
-> 2. Incorporar las validaciones necesarias para evitar datos inválidos y garantizar la consistencia de las reservas.
-> 3. Gestionar la lista de espera respetando el orden de ingreso y las reglas de negocio definidas por el proyecto.
-> 4. Desarrollar pruebas unitarias para verificar los casos normales, los errores y las situaciones límite.
-> 5. Documentar las funciones mediante docstrings y mantener un código legible, modular y fácil de mantener.
->
-> Restricciones técnicas:
->
-> - Utilizar programación estructurada, sin introducir clases ni modificar innecesariamente la arquitectura del proyecto.
-> - Respetar las firmas y responsabilidades establecidas en CONTRATO_MODULOS.md.
-> - Mantener cada función dentro del límite de 40 líneas establecido por el equipo.
-> - No incorporar mensajes de salida (print) en el módulo de lógica de negocio.
-> - Evitar cambios en módulos ajenos a mi responsabilidad, salvo que sean indispensables y estén justificados.
->
-> Al finalizar, indicá qué funciones implementaste, qué decisiones de diseño adoptaste, qué archivos modificaste y cómo ejecutar las pruebas. No afirmes que una prueba pasó sin haberla ejecutado o sin contar con evidencia de su resultado. Si encontrás contradicciones entre los requisitos o dependencias faltantes, señalalas antes de tomar decisiones que alteren el diseño.
+**Prompt:** "Necesito completar mi parte (soy Federico Cabrera)" — con el enlace al
+repositorio. La IA leyó `CLAUDE.md`, `CONTRATO_MODULOS.md` y `main.py` para ubicar qué
+módulo me toca y cómo lo usa el resto del programa.
 
 **Resultado:** Implementó las ocho funciones de `estructuras.py` con las firmas del
 contrato, sin cambiar ninguna: `crear_reserva()`, `esta_ocupado()`,
