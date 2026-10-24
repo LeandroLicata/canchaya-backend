@@ -147,7 +147,7 @@ Bombonerita en `datos/complejos.json`.
 
 **Prompt:**
 
-> Estoy trabajando en el proyecto CanchaYa, una aplicación de gestión de reservas de canchas deportivas desarrollada en Python para la asignatura Práctica Profesional I.
+> Estoy trabajando en el proyecto CanchaYa, una aplicación de gestión de reservas de canchas deportivas desarrollada en Python para la asignatura Programación I.
 >
 > Mi responsabilidad es implementar el módulo estructuras.py, encargado de gestionar las reservas, consultar la disponibilidad, modificar y cancelar reservas, y administrar la lista de espera mediante una política FIFO (First In, First Out).
 >
