@@ -484,3 +484,44 @@ espera, sobre una base temporal, y se probó `reasignar_turno()` con una lista e
 **Modificaciones:** _(completar)_
 
 **Estado:** _(completar)_
+
+---
+
+**Fecha:** 24/10/2026 | **Herramienta:** Claude | **Integrante:** Gonzalo Tapia
+
+**Prompt:** Le pasé el plan del Hito 2 y el mensaje del equipo con el orden de prioridades
+para encarar mis tareas de `persistencia.py`: la constante del segundo gráfico y los
+datos de muestra.
+
+**Resultado:**
+
+- `RUTA_GRAFICO_INGRESOS`: la escribí yo siguiendo el patrón de `RUTA_GRAFICO`.
+- Datos de muestra: los generó la IA. Le pedí que los armara porque son 31 reservas de 12
+  campos cada una y era fácil meter un error a mano. Le puse reglas que tenían que
+  cumplir: ningún turno con dos reservas confirmadas, toda reserva en espera con una
+  confirmada adelante, las canceladas con motivo, el registro anterior al turno y los id
+  correlativos. También que algún complejo y algún horario destaquen, para que los
+  gráficos y el ranking muestren diferencias. Me entregó además un script que verifica
+  esas reglas.
+- Salto de línea en `escribir_json()`: la IA detectó que `json.dump` no agrega el salto
+  final y por eso `complejos.json` aparecía modificado en cada corrida. La línea la
+  escribí yo.
+
+**Problema encontrado:** al cargar las reservas nuevas, el menú no mostraba ninguna. La
+causa era que `inicializar_bd()` solo importa los JSON cuando la base se crea (lo agregó
+Leandro con `nueva = not os.path.exists(RUTA_BD)`, que tiene que ir antes de
+`conectar()` porque `sqlite3.connect()` crea el archivo). Como mi base ya existía, nunca
+leyó el JSON nuevo. Se resolvió borrando `canchaya.db`. Quedó avisado en el PR para el
+resto del equipo.
+
+**Otras decisiones:** `reservas.json` está en el `.gitignore` porque se reescribe en cada
+corrida. Lo agregué con `git add -f`, como indica el propio `.gitignore` para las
+muestras de fin de proyecto. También saqué el proyecto de OneDrive, que estaba trabando
+las operaciones de git.
+
+**Verificación:** el script de reglas dio "Todo OK", revisé desde el menú las reservas de
+Estadio 5 y La Redonda, y pasan los 37 tests.
+
+**Modificaciones:** No se hicieron modificaciones a lo generado por claude. 
+
+**Estado:** Quedo pendiente de aprobacion: con numero de pr# 9
