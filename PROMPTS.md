@@ -585,3 +585,40 @@ con el botón de lista de espera. Después lo probé yo con el navegador y la AP
 todo está correcto.
 
 **Estado:** usado tal cual, en la rama `feat/mis-reservas-js` (commit `87c44f2`).
+
+---
+
+**Fecha:** 25/10/2026 | **Herramienta:** Claude (chat web) | **Integrante:** Gustavo Di Paola
+
+**Prompt:** Le pasé el plan del Hito 2, `CONTRATO_MODULOS.md`, mi `estadisticas.py` y el
+`CLAUDE.md` del proyecto. Le pedí ayuda con mis tareas: extraer la parte común de
+matplotlib en `graficar_barras()`, sumar `graficar_ingresos()` (segundo PNG de la opción D),
+hacer que `graficar_ocupacion()` la reutilice sin cambiar su firma y borrar
+`buscar_complejo_por_id()` para usar `utils.buscar_complejo()`.
+
+**Resultado:** Una versión completa de `estadisticas.py` con `graficar_barras()`,
+`graficar_ocupacion()` y `graficar_ingresos()` (esta última delega en la primera),
+y `ingresos_por_complejo()` usando `utils.buscar_complejo()`. Mantiene el import de
+matplotlib dentro de la función, devuelve `False` si no hay datos o si falla el guardado,
+y cierra la figura con `finally`.
+
+**Modificaciones:** _(completar)_
+
+**Estado:** _(completar)_
+
+---
+
+**Fecha:** 25/10/2026 | **Herramienta:** Claude (chat web) | **Integrante:** Gustavo Di Paola
+
+**Prompt:** Le pedí que generara `tests/test_estadisticas.py` con 3 o 4 tests de las
+estadísticas (porcentaje con lista vacía, ranking ordenado, ingresos solo de confirmadas),
+respetando las reglas del `CLAUDE.md` (docstring en toda función).
+
+**Resultado:** Un archivo con 6 tests: porcentaje de cancelaciones (lista vacía y una de
+cuatro), ingresos solo de confirmadas, ranking ordenado, ocupación con todos los horarios y
+`graficar_barras()` con datos vacíos, más la función auxiliar `armar_reserva()`. El test
+del gráfico usa `tmp_path` para no escribir en el repo.
+
+**Modificaciones:** _(completar)_
+
+**Estado:** _(completar)_
