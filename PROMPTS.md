@@ -145,31 +145,9 @@ Bombonerita en `datos/complejos.json`.
 
 **Fecha:** 22/09/2026 | **Herramienta:** Claude | **Integrante:** Federico Cabrera
 
-**Prompt:**
-
-> Estoy trabajando en el proyecto CanchaYa, una aplicación de gestión de reservas de canchas deportivas desarrollada en Python para la asignatura Práctica Profesional I.
->
-> Mi responsabilidad es implementar el módulo estructuras.py, encargado de gestionar las reservas, consultar la disponibilidad, modificar y cancelar reservas, y administrar la lista de espera mediante una política FIFO (First In, First Out).
->
-> Antes de realizar cambios, analizá el archivo CLAUDE.md, el contrato de módulos CONTRATO_MODULOS.md y la integración existente en main.py. Utilizá esos archivos como fuente de los requisitos y respetá las interfaces definidas por el equipo.
->
-> Objetivos de implementación:
->
-> 1. Implementar las funciones de estructuras.py especificadas en el contrato, manteniendo la compatibilidad con los módulos que las utilizan.
-> 2. Incorporar las validaciones necesarias para evitar datos inválidos y garantizar la consistencia de las reservas.
-> 3. Gestionar la lista de espera respetando el orden de ingreso y las reglas de negocio definidas por el proyecto.
-> 4. Desarrollar pruebas unitarias para verificar los casos normales, los errores y las situaciones límite.
-> 5. Documentar las funciones mediante docstrings y mantener un código legible, modular y fácil de mantener.
->
-> Restricciones técnicas:
->
-> - Utilizar programación estructurada, sin introducir clases ni modificar innecesariamente la arquitectura del proyecto.
-> - Respetar las firmas y responsabilidades establecidas en CONTRATO_MODULOS.md.
-> - Mantener cada función dentro del límite de 40 líneas establecido por el equipo.
-> - No incorporar mensajes de salida (print) en el módulo de lógica de negocio.
-> - Evitar cambios en módulos ajenos a mi responsabilidad, salvo que sean indispensables y estén justificados.
->
-> Al finalizar, indicá qué funciones implementaste, qué decisiones de diseño adoptaste, qué archivos modificaste y cómo ejecutar las pruebas. No afirmes que una prueba pasó sin haberla ejecutado o sin contar con evidencia de su resultado. Si encontrás contradicciones entre los requisitos o dependencias faltantes, señalalas antes de tomar decisiones que alteren el diseño.
+**Prompt:** "Necesito completar mi parte (soy Federico Cabrera)" — con el enlace al
+repositorio. La IA leyó `CLAUDE.md`, `CONTRATO_MODULOS.md` y `main.py` para ubicar qué
+módulo me toca y cómo lo usa el resto del programa.
 
 **Resultado:** Implementó las ocho funciones de `estructuras.py` con las firmas del
 contrato, sin cambiar ninguna: `crear_reserva()`, `esta_ocupado()`,
@@ -511,9 +489,16 @@ API y se consultó con `curl` (devuelve los 6 complejos), y se recorrió el fluj
 formulario con `curl` imitando al navegador: CORS, reserva confirmada, 409 y lista de
 espera, sobre una base temporal, y se probó `reasignar_turno()` con una lista en memoria (la reserva en espera pasa a confirmada).
 
-**Modificaciones:** _(completar)_
+**Modificaciones:** Levanté la API y el frontend y probé el formulario (reserva confirmada
+y lista de espera) y la consola con las reservas hechas desde la web. Todo funcionó, así
+que no le hice cambios al código generado. Lo único que toqué después fue al integrar la
+migración a pytest de Federico (13/10): resolví el conflicto en `tests/test_estructuras.py`
+conservando sus pruebas y las de `promover_espera()`, y saqué el `unittest.main()` que
+había quedado.
 
-**Estado:** _(completar)_
+**Estado:** en uso, sin modificaciones. Commits `4b7fe65`, `79bf294`, `1fc7e46`, `11e6fe9`,
+`25bcf55`, `d812cc0` y `5d8c54d` en el backend, `0be8b5e` en el frontend y `5143c75`
+(integración con la migración a pytest).
 
 ---
 
@@ -586,4 +571,86 @@ corta con `AttributeError`.
 el lanzador: corrí la opción 6 y revisé `ocupacion.png` y los avisos.
 
 **Estado:** usado tal cual, en la rama `feat/menu-dos-graficos` (PR #14, commit `39517a3`).
-Se mergea cuando entre `graficar_ingresos()` de Gustavo.
+Se probó junto con `graficar_ingresos()` de Gustavo (#17): la opción 6 genera los dos PNG.
+
+---
+
+**Fecha:** 24/10/2026 | **Herramienta:** Claude (Claude Code) | **Integrante:** Leandro Licata
+
+**Prompt:** "Arranquemos", como respuesta a la propuesta de seguir con `js/mis-reservas.js`,
+la parte del frontend que me tocaba en el plan del Hito 2.
+
+**Resultado:** La IA leyó `mis-reservas.html`, que había hecho Federico con los ids
+documentados, y los endpoints de `api.py`. Generó:
+
+- `js/mis-reservas.js`: busca las reservas por email, muestra el detalle, cambia los
+  jugadores o los comentarios y cancela con motivo, usando los cuatro endpoints que ninguna
+  página consumía (`GET /api/reservas`, `GET /api/reservas/<id>`, `PATCH` y `.../cancelar`).
+- `js/comun.js`: `pedirApi()`, `mostrarMensaje()`, `API_URL` y `SIN_CONEXION` estaban en
+  `reservar.js`. En vez de copiarlas, las pasó a un archivo que cargan las dos páginas, y
+  sumó `enviarJson()` para no repetir las opciones de `fetch`. `reservar.js` quedó sin esas
+  funciones y con los comentarios renumerados. Las dos páginas cargan `comun.js`; en la de
+  Federico la línea va marcada `[LEA]`.
+
+**Decisiones de diseño que hay que poder explicar en la defensa:**
+
+- La API busca el email por coincidencia parcial, así que la página deja solo las reservas
+  cuyo email es exactamente el ingresado, sin distinguir mayúsculas. Si no, buscando
+  "paz@ejemplo.com" aparecían las de Carolina Paz.
+- Al cancelar, si había alguien en la lista de espera, el mensaje dice que el turno pasó al
+  primero de la cola, pero no quién es, porque son los datos de otro cliente.
+- Una reserva cancelada muestra el motivo y oculta las acciones, porque la API ya no deja
+  modificarla.
+
+**Problema encontrado:** al probar, en el puerto 5000 respondía otra aplicación mía de otro
+proyecto (`app.py`), no la API de CanchaYa. La IA lo detectó porque los complejos tenían
+campos que nuestro backend no usa, y levantó la prueba en el puerto 5001.
+
+**Verificación:** con una copia del proyecto y Chrome headless se recorrieron los dos flujos.
+En Mis reservas: email parcial sin resultados, email exacto con mayúsculas y espacios,
+detalle, cambio de jugadores, error de la API con 30 jugadores, comentarios, cancelación y
+vuelta al listado. Al cancelar la #14, la #15 pasó a confirmada y la #16 siguió en espera.
+En Reservar, después del cambio a `comun.js`: carga de complejos, reserva confirmada y 409
+con el botón de lista de espera. Después lo probé yo con el navegador y la API levantada.
+
+**Modificaciones:** No hice modificaciones. Lo probé manualmente, revisé el código y
+todo está correcto.
+
+**Estado:** usado tal cual, en la rama `feat/mis-reservas-js` (commit `87c44f2`).
+
+---
+
+**Fecha:** 25/10/2026 | **Herramienta:** Claude (chat web) | **Integrante:** Gustavo Di Paola
+
+**Prompt:** Le pasé el plan del Hito 2, `CONTRATO_MODULOS.md`, mi `estadisticas.py` y el
+`CLAUDE.md` del proyecto. Le pedí ayuda con mis tareas: extraer la parte común de
+matplotlib en `graficar_barras()`, sumar `graficar_ingresos()` (segundo PNG de la opción D),
+hacer que `graficar_ocupacion()` la reutilice sin cambiar su firma y borrar
+`buscar_complejo_por_id()` para usar `utils.buscar_complejo()`.
+
+**Resultado:** Una versión completa de `estadisticas.py` con `graficar_barras()`,
+`graficar_ocupacion()` y `graficar_ingresos()` (esta última delega en la primera),
+y `ingresos_por_complejo()` usando `utils.buscar_complejo()`. Mantiene el import de
+matplotlib dentro de la función, devuelve `False` si no hay datos o si falla el guardado,
+y cierra la figura con `finally`.
+
+**Modificaciones:** _(completar)_
+
+**Estado:** _(completar)_
+
+---
+
+**Fecha:** 25/10/2026 | **Herramienta:** Claude (chat web) | **Integrante:** Gustavo Di Paola
+
+**Prompt:** Le pedí que generara `tests/test_estadisticas.py` con 3 o 4 tests de las
+estadísticas (porcentaje con lista vacía, ranking ordenado, ingresos solo de confirmadas),
+respetando las reglas del `CLAUDE.md` (docstring en toda función).
+
+**Resultado:** Un archivo con 6 tests: porcentaje de cancelaciones (lista vacía y una de
+cuatro), ingresos solo de confirmadas, ranking ordenado, ocupación con todos los horarios y
+`graficar_barras()` con datos vacíos, más la función auxiliar `armar_reserva()`. El test
+del gráfico usa `tmp_path` para no escribir en el repo.
+
+**Modificaciones:** _(completar)_
+
+**Estado:** _(completar)_

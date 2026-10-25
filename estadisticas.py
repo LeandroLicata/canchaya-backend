@@ -1,9 +1,10 @@
 # estadisticas.py — Cálculo de métricas sobre las reservas y generación de gráficos.
 # [GUS] Gustavo Di Paola.
 #
-# graficar_ocupacion() es el eje de investigación del proyecto (matplotlib) y es la
+# graficar_barras() es el eje de investigación del proyecto (matplotlib) y es la
 # única función que necesita una biblioteca externa: se importa adentro de la función,
 # para que el resto del programa funcione aunque matplotlib no esté instalado.
+# graficar_ocupacion() y graficar_ingresos() la reutilizan para no repetir código.
 
 import os
 
@@ -30,21 +31,6 @@ def ocupacion_por_horario(lista_reservas):
     return ocupacion
 
 
-def buscar_complejo_por_id(lista_complejos, id_complejo):
-    """Busca un complejo por su id.
-
-    Parámetros:
-        lista_complejos: lista de complejos.
-        id_complejo: id a buscar.
-    Devuelve:
-        El diccionario del complejo, o None si no existe.
-    """
-    for complejo in lista_complejos:
-        if complejo["id"] == id_complejo:
-            return complejo
-    return None
-
-
 def ingresos_por_complejo(lista_reservas, lista_complejos):
     """Calcula cuánto facturó cada complejo con las reservas confirmadas.
 
@@ -61,7 +47,7 @@ def ingresos_por_complejo(lista_reservas, lista_complejos):
     for reserva in lista_reservas:
         if reserva["estado"] != estructuras.ESTADO_CONFIRMADA:
             continue
-        complejo = buscar_complejo_por_id(lista_complejos, reserva["id_complejo"])
+        complejo = utils.buscar_complejo(lista_complejos, reserva["id_complejo"])
         if complejo is not None:
             ingresos[complejo["nombre"]] += complejo["precio_hora"]
     return ingresos
@@ -113,11 +99,16 @@ def porcentaje_cancelaciones(lista_reservas):
     return round(canceladas * 100 / total, 1)
 
 
-def graficar_ocupacion(ocupacion, ruta):
-    """Genera un gráfico de barras de la ocupación por horario y lo guarda como PNG.
+def graficar_barras(datos, titulo, etiqueta_x, etiqueta_y, ruta):
+    """Genera un gráfico de barras genérico y lo guarda como PNG.
+
+    Es la parte común de matplotlib: la usan todos los gráficos del módulo.
 
     Parámetros:
-        ocupacion: diccionario devuelto por ocupacion_por_horario().
+        datos: diccionario {etiqueta: valor}.
+        titulo: título del gráfico.
+        etiqueta_x: texto del eje horizontal.
+        etiqueta_y: texto del eje vertical.
         ruta: ruta del archivo PNG a generar.
     Devuelve:
         True si pudo generar el gráfico, False si no.
@@ -129,19 +120,50 @@ def graficar_ocupacion(ocupacion, ruta):
     except ImportError:
         return False
 
+    if not datos:
+        return False
+
     try:
         carpeta = os.path.dirname(ruta)
         if carpeta:
             os.makedirs(carpeta, exist_ok=True)
 
         plt.figure(figsize=(9, 5))
-        plt.bar(list(ocupacion.keys()), list(ocupacion.values()), color="#2e86de")
-        plt.title("Ocupación por horario (reservas confirmadas)")
-        plt.xlabel("Horario")
-        plt.ylabel("Cantidad de reservas")
+        plt.bar(list(datos.keys()), list(datos.values()), color="#2e86de")
+        plt.title(titulo)
+        plt.xlabel(etiqueta_x)
+        plt.ylabel(etiqueta_y)
         plt.tight_layout()
         plt.savefig(ruta)
-        plt.close()
         return True
     except OSError:
         return False
+    finally:
+        plt.close()
+
+
+def graficar_ocupacion(ocupacion, ruta):
+    """Genera el gráfico de ocupación por horario.
+
+    Parámetros:
+        ocupacion: diccionario devuelto por ocupacion_por_horario().
+        ruta: ruta del archivo PNG a generar.
+    Devuelve:
+        True si pudo generar el gráfico, False si no.
+    """
+    return graficar_barras(ocupacion,
+                           "Ocupación por horario (reservas confirmadas)",
+                           "Horario", "Cantidad de reservas", ruta)
+
+
+def graficar_ingresos(ingresos, ruta):
+    """Genera el gráfico de ingresos por complejo.
+
+    Parámetros:
+        ingresos: diccionario devuelto por ingresos_por_complejo().
+        ruta: ruta del archivo PNG a generar.
+    Devuelve:
+        True si pudo generar el gráfico, False si no.
+    """
+    return graficar_barras(ingresos, "Ingresos por complejo (confirmadas)",
+                           "Complejo", "Ingresos ($)", ruta)
