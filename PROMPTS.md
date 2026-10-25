@@ -511,9 +511,16 @@ API y se consultó con `curl` (devuelve los 6 complejos), y se recorrió el fluj
 formulario con `curl` imitando al navegador: CORS, reserva confirmada, 409 y lista de
 espera, sobre una base temporal, y se probó `reasignar_turno()` con una lista en memoria (la reserva en espera pasa a confirmada).
 
-**Modificaciones:** _(completar)_
+**Modificaciones:** Levanté la API y el frontend y probé el formulario (reserva confirmada
+y lista de espera) y la consola con las reservas hechas desde la web. Todo funcionó, así
+que no le hice cambios al código generado. Lo único que toqué después fue al integrar la
+migración a pytest de Federico (13/10): resolví el conflicto en `tests/test_estructuras.py`
+conservando sus pruebas y las de `promover_espera()`, y saqué el `unittest.main()` que
+había quedado.
 
-**Estado:** _(completar)_
+**Estado:** en uso, sin modificaciones. Commits `4b7fe65`, `79bf294`, `1fc7e46`, `11e6fe9`,
+`25bcf55`, `d812cc0` y `5d8c54d` en el backend, `0be8b5e` en el frontend y `5143c75`
+(integración con la migración a pytest).
 
 ---
 
