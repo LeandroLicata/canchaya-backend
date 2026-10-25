@@ -539,7 +539,7 @@ Estadio 5 y La Redonda, y pasan los 37 tests.
 
 **Modificaciones:** No se hicieron modificaciones a lo generado por claude. 
 
-**Estado:** Quedo pendiente de aprobacion: con numero de pr# 9
+**Estado:** En uso tal cual, mergeado en main con el PR #9 (commit `460ab72`).
 
 ---
 

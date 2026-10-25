@@ -10,6 +10,7 @@ import persistencia
 
 
 def test_escribir_y_leer_json(tmp_path):
+    """Lo que se escribe en un JSON se puede volver a leer igual."""
     ruta = str(tmp_path / "prueba.json")
     datos = [{"id": 1, "nombre": "Estadio 5"}]
 
@@ -18,6 +19,7 @@ def test_escribir_y_leer_json(tmp_path):
     
     
 def test_guardar_y_cargar_tabla(tmp_path, monkeypatch):
+    """Lo que se guarda en una tabla de SQLite se recupera igual, sin tocar la base real."""
     monkeypatch.setattr(persistencia, "RUTA_BD", str(tmp_path / "prueba.db"))
     
     complejos = [
@@ -30,6 +32,7 @@ def test_guardar_y_cargar_tabla(tmp_path, monkeypatch):
     
 
 def test_exportar_csv(tmp_path):
+    """El CSV devuelve la cantidad de filas escritas y suma el encabezado como primera línea."""
     ruta = str(tmp_path / "reporte.csv")
     encabezados = ["id", "ciente"]
     filas = [[1, "Gonzalo "], [2, "Pepe Hongo"]]
@@ -42,6 +45,7 @@ def test_exportar_csv(tmp_path):
     
     
 def test_registrar_log_acumula(tmp_path, monkeypatch):
+    """Cada llamada al log agrega una línea nueva sin pisar las anteriores."""
     ruta = str(tmp_path / "log.txt")
     monkeypatch.setattr(persistencia, "RUTA_LOG", ruta)
     
@@ -56,6 +60,7 @@ def test_registrar_log_acumula(tmp_path, monkeypatch):
     
     
 def test_cargar_json_inexistente(tmp_path):
+    """Si el archivo no existe, devuelve el valor por defecto y lo deja creado."""
     ruta = str(tmp_path / "nuevo.json")
     
     
