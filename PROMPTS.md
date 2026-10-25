@@ -581,6 +581,7 @@ vuelta al listado. Al cancelar la #14, la #15 pasó a confirmada y la #16 sigui�
 En Reservar, después del cambio a `comun.js`: carga de complejos, reserva confirmada y 409
 con el botón de lista de espera. Después lo probé yo con el navegador y la API levantada.
 
-**Modificaciones:** _(completar)_
+**Modificaciones:** No hice modificaciones. Lo probé manualmente, revisé el código y
+todo está correcto.
 
-**Estado:** _(completar)_
+**Estado:** usado tal cual, en la rama `feat/mis-reservas-js` (commit `87c44f2`).
