@@ -582,6 +582,8 @@ el aviso de error para el gráfico de ingresos. `avisar_grafico()` tiene 13 lín
 no se puede mergear antes que la de Gustavo: sin `graficar_ingresos()`, la opción 6 se
 corta con `AttributeError`.
 
-**Modificaciones:** _(completar)_
+**Modificaciones:** No hice modificaciones adicionales. Antes del commit lo probé a mano con
+el lanzador: corrí la opción 6 y revisé `ocupacion.png` y los avisos.
 
-**Estado:** _(completar)_
+**Estado:** usado tal cual, en la rama `feat/menu-dos-graficos` (PR #14, commit `39517a3`).
+Se mergea cuando entre `graficar_ingresos()` de Gustavo.
