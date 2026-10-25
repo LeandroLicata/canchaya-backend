@@ -305,8 +305,23 @@ def flujo_lista_espera(lista_reservas, lista_complejos):
     return lista_reservas
 
 
+def avisar_grafico(generado, ruta):
+    """Avisa dónde quedó un gráfico PNG o que no se pudo generar.
+
+    Parámetros:
+        generado: lo que devolvió la función de graficar (True o False).
+        ruta: ruta del PNG que se intentó generar.
+    Devuelve: nada.
+    """
+    if generado:
+        print("  Gráfico guardado en {0}".format(ruta))
+    else:
+        print("  No se pudo generar {0}: falta matplotlib o no se pudo escribir "
+              "el archivo.".format(ruta))
+
+
 def flujo_estadisticas(lista_reservas, lista_complejos):
-    """Muestra las estadísticas del período y genera el gráfico de ocupación.
+    """Muestra las estadísticas del período y genera los gráficos de ocupación e ingresos.
 
     Parámetros: la lista de reservas y la de complejos.
     Devuelve: nada.
@@ -331,8 +346,11 @@ def flujo_estadisticas(lista_reservas, lista_complejos):
         print("   {0}. {1} ({2} reservas)".format(puesto, nombre, cantidad))
     print("\n  Reservas canceladas: {0} %".format(canceladas))
 
-    if estadisticas.graficar_ocupacion(ocupacion, persistencia.RUTA_GRAFICO):
-        print("  Gráfico guardado en {0}".format(persistencia.RUTA_GRAFICO))
+    print()
+    generado = estadisticas.graficar_ocupacion(ocupacion, persistencia.RUTA_GRAFICO)
+    avisar_grafico(generado, persistencia.RUTA_GRAFICO)
+    generado = estadisticas.graficar_ingresos(ingresos, persistencia.RUTA_GRAFICO_INGRESOS)
+    avisar_grafico(generado, persistencia.RUTA_GRAFICO_INGRESOS)
     persistencia.registrar_log("ver_estadisticas", "{0} reservas".format(len(lista_reservas)))
 
 

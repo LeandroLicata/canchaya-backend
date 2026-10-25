@@ -545,6 +545,38 @@ Estadio 5 y La Redonda, y pasan los 37 tests.
 
 **Fecha:** 24/10/2026 | **Herramienta:** Claude (Claude Code) | **Integrante:** Leandro Licata
 
+**Prompt:** "Podríamos seguir con mi parte, de integrar los gráficos en el menú" y, antes de
+hacer el commit, "quisiera probarlo primero".
+
+**Resultado:** La IA revisó si Gustavo ya había subido `graficar_ingresos()`. Como todavía
+no estaba, no la escribió: es del módulo de Gustavo y su firma ya estaba fijada en
+`CONTRATO_MODULOS.md`. En `main.py` hizo dos cambios:
+
+- `flujo_estadisticas()` genera los dos gráficos de la opción 6: ocupación por horario con
+  `RUTA_GRAFICO` e ingresos por complejo con `RUTA_GRAFICO_INGRESOS`.
+- `avisar_grafico(generado, ruta)` es una función nueva que muestra dónde quedó cada PNG.
+  Así el mismo `print` no se repite para los dos gráficos. También avisa cuando un gráfico
+  no se pudo generar; antes, si fallaba, no aparecía nada.
+
+Para que yo pudiera probarlo sin la función de Gustavo, armó un lanzador fuera del repo que
+corre `main.py` con una `graficar_ingresos()` falsa que devuelve `False`.
+
+**Verificación:** la opción 6 con las 31 reservas de muestra genera `ocupacion.png` y muestra
+el aviso de error para el gráfico de ingresos. `avisar_grafico()` tiene 13 líneas y
+`flujo_estadisticas()` pasó de 29 a 32, las dos con docstring. Pasan los 37 tests. La rama
+no se puede mergear antes que la de Gustavo: sin `graficar_ingresos()`, la opción 6 se
+corta con `AttributeError`.
+
+**Modificaciones:** No hice modificaciones adicionales. Antes del commit lo probé a mano con
+el lanzador: corrí la opción 6 y revisé `ocupacion.png` y los avisos.
+
+**Estado:** usado tal cual, en la rama `feat/menu-dos-graficos` (PR #14, commit `39517a3`).
+Se probó junto con `graficar_ingresos()` de Gustavo (#17): la opción 6 genera los dos PNG.
+
+---
+
+**Fecha:** 24/10/2026 | **Herramienta:** Claude (Claude Code) | **Integrante:** Leandro Licata
+
 **Prompt:** "Arranquemos", como respuesta a la propuesta de seguir con `js/mis-reservas.js`,
 la parte del frontend que me tocaba en el plan del Hito 2.
 
