@@ -7,9 +7,9 @@
    libres, y le envía la reserva. Si el backend no responde, se avisa en pantalla.
    La validación de HTML5 sigue funcionando: el evento "submit" solo se dispara
    cuando el navegador ya aceptó todos los campos.
+   API_URL, SIN_CONEXION, pedirApi(), enviarJson() y mostrarMensaje() están en
+   js/comun.js, que se carga antes que este archivo.
    ------------------------------------------------------------------------- */
-
-const API_URL = "http://localhost:5000/api";
 
 const formulario     = document.querySelector(".formulario");
 const selectComplejo = document.querySelector("#complejo");
@@ -18,30 +18,8 @@ const selectHora     = document.querySelector("#hora");
 const botonEnviar    = formulario.querySelector('button[type="submit"]');
 const cajaMensaje    = document.querySelector("#mensaje");
 
-const SIN_CONEXION = "No pudimos conectarnos con el servidor de reservas. " +
-                     "Probá de nuevo en unos minutos.";
 
-
-// 1) Hace un pedido a la API y devuelve { ok, status, datos }.
-//    Si el servidor no está levantado, fetch lanza un error que se maneja afuera.
-async function pedirApi(ruta, opciones) {
-  const respuesta = await fetch(API_URL + ruta, opciones);
-  const datos = await respuesta.json();
-  return { ok: respuesta.ok, status: respuesta.status, datos: datos };
-}
-
-
-// 2) Muestra un mensaje debajo del botón. tipo: "exito", "aviso" o "error".
-//    Se usa textContent (y no innerHTML) para que nada de lo que venga del
-//    servidor pueda inyectar HTML en la página.
-function mostrarMensaje(texto, tipo) {
-  cajaMensaje.textContent = texto;
-  cajaMensaje.className = "mensaje mensaje-" + tipo;
-  cajaMensaje.hidden = false;
-}
-
-
-// 3) Arma una <option> para un <select>.
+// 1) Arma una <option> para un <select>.
 function crearOpcion(valor, texto) {
   const opcion = document.createElement("option");
   opcion.value = valor;
@@ -50,7 +28,7 @@ function crearOpcion(valor, texto) {
 }
 
 
-// 4) Fecha de hoy en formato AAAA-MM-DD (hora local, no UTC), para que el
+// 2) Fecha de hoy en formato AAAA-MM-DD (hora local, no UTC), para que el
 //    calendario no deje elegir días pasados.
 function hoy() {
   const fecha = new Date();
@@ -60,7 +38,7 @@ function hoy() {
 }
 
 
-// 5) Carga los complejos en el <select> desde GET /api/complejos.
+// 3) Carga los complejos en el <select> desde GET /api/complejos.
 async function cargarComplejos() {
   try {
     const { datos } = await pedirApi("/complejos");
@@ -78,7 +56,7 @@ async function cargarComplejos() {
 }
 
 
-// 6) Al elegir complejo y fecha, pide los horarios libres y arma el <select>.
+// 4) Al elegir complejo y fecha, pide los horarios libres y arma el <select>.
 //    Los ocupados se pueden elegir igual: es la forma de anotarse en la lista
 //    de espera, como en la consola.
 async function actualizarHorarios() {
@@ -102,7 +80,7 @@ async function actualizarHorarios() {
 }
 
 
-// 7) Lee el formulario y arma el JSON con los nombres de campo del backend.
+// 5) Lee el formulario y arma el JSON con los nombres de campo del backend.
 //    id_complejo y jugadores van como números: la API rechaza "10" como texto.
 function leerFormulario(aceptarEspera) {
   const campos = new FormData(formulario);
@@ -120,7 +98,7 @@ function leerFormulario(aceptarEspera) {
 }
 
 
-// 8) Mensaje para una reserva creada, según si quedó confirmada o en espera.
+// 6) Mensaje para una reserva creada, según si quedó confirmada o en espera.
 function mensajeReserva(reserva) {
   const [anio, mes, dia] = reserva.fecha.split("-");
   const turno = dia + "/" + mes + " a las " + reserva.hora;
@@ -133,7 +111,7 @@ function mensajeReserva(reserva) {
 }
 
 
-// 9) Si el horario está ocupado, ofrece anotarse en la lista de espera.
+// 7) Si el horario está ocupado, ofrece anotarse en la lista de espera.
 function ofrecerEspera(texto) {
   mostrarMensaje(texto, "aviso");
   const boton = document.createElement("button");
@@ -145,15 +123,12 @@ function ofrecerEspera(texto) {
 }
 
 
-// 10) Envía la reserva con POST /api/reservas y muestra el resultado.
+// 8) Envía la reserva con POST /api/reservas y muestra el resultado.
 async function enviarReserva(aceptarEspera) {
   botonEnviar.disabled = true;  // evita reservas duplicadas por doble clic
   try {
-    const { ok, status, datos } = await pedirApi("/reservas", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(leerFormulario(aceptarEspera))
-    });
+    const { ok, status, datos } = await pedirApi("/reservas",
+                                                 enviarJson("POST", leerFormulario(aceptarEspera)));
     if (ok) {
       mostrarMensaje(mensajeReserva(datos), datos.estado === "confirmada" ? "exito" : "aviso");
       formulario.reset();
@@ -170,7 +145,7 @@ async function enviarReserva(aceptarEspera) {
 }
 
 
-// 11) Conexión de los eventos y carga inicial.
+// 9) Conexión de los eventos y carga inicial.
 inputFecha.min = hoy();
 selectComplejo.addEventListener("change", actualizarHorarios);
 inputFecha.addEventListener("change", actualizarHorarios);
