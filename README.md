@@ -30,11 +30,16 @@ Backend en Python de **CanchaYa**, la plataforma de reserva de canchas de fútbo
 Mendoza desarrollada por el mismo equipo en Práctica Profesional I
 ([sitio](https://github.com/gustavodipaola75-star/canchaya)).
 
-Hoy el sitio es estático: el formulario de `reservar.html` valida los datos en el
-navegador pero no los envía a ningún lado, y el listado de complejos está escrito a mano
-en el HTML. Este proyecto resuelve esa mitad faltante: una aplicación de consola
-(programación estructurada, **sin POO**) que administra los complejos, controla la
-disponibilidad horaria, registra las reservas y produce estadísticas de ocupación.
+El sitio original era estático: el formulario de `reservar.html` validaba los datos en el
+navegador pero no los enviaba a ningún lado. Este proyecto resuelve esa mitad faltante:
+una aplicación de consola (programación estructurada, **sin POO**) que administra los
+complejos, controla la disponibilidad horaria, registra las reservas y produce
+estadísticas de ocupación.
+
+El sitio ahora vive en la carpeta `frontend/` y el formulario de reserva ya está conectado
+al backend a través de la API con Flask: carga los complejos y los horarios libres desde
+el servidor y envía la reserva, que queda guardada junto con las que se registran desde la
+consola. El listado de `complejos.html` sigue escrito a mano en el HTML.
 
 Los datos se persisten en JSON, los reportes diarios se exportan en CSV y cada operación
 queda registrada en un log de texto plano.
@@ -83,6 +88,11 @@ api.py            # Endpoints Flask (eje complementario)
 datos/            # complejos.json, reservas.json, reportes CSV y log TXT
 graficos/         # Gráficos PNG generados con matplotlib
 tests/            # Pruebas unitarias
+frontend/         # Sitio de CanchaYa (HTML, CSS y JS) conectado a la API
+├── index.html, complejos.html, reservar.html, nosotros.html
+├── css/          # estilos.css
+├── js/           # menu.js y reservar.js (consume la API con fetch)
+└── assets/       # Imágenes de canchas, equipo y portada
 ```
 
 ## Eje de investigación
@@ -136,7 +146,15 @@ correr una vez `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
 
 - Aplicación de consola: `python main.py`
 - API para el frontend: `python api.py` (queda escuchando en `http://localhost:5000`)
+- Frontend: con la API levantada, abrir `frontend/index.html` en el navegador (doble clic
+  o *Live Server* de VS Code). También se puede servir desde otra terminal con
+  `python -m http.server 8000 --directory frontend` y entrar a `http://localhost:8000`
 - Pruebas: `python -m pytest` (detalle en *Pruebas automatizadas*)
+
+El frontend y la API corren por separado: la página de reserva (`js/reservar.js`) le pide
+a `http://localhost:5000/api` los complejos y los horarios libres, y le envía la reserva.
+Si la API no está levantada, el formulario avisa en pantalla que no hay conexión con el
+servidor.
 
 | Endpoint | Qué devuelve |
 |---|---|

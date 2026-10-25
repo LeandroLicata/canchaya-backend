@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<!-- =========================================================================
+     PÁGINA: Mis reservas (mis-reservas.html)
+     RESPONSABLE: [FED] Federico Cabrera — Frontend / HTML
+     QUÉ HACE: estructura de la página donde el cliente busca sus reservas por
+     email, ve el detalle de una, cambia los jugadores o los comentarios y la
+     cancela con un motivo. La lógica la agrega js/mis-reservas.js ([LEA]
+     Leandro) con los endpoints que ya existen en api.py:
+       GET   /api/reservas?campo=email&valor=...   buscar (mostrar solo las de
+                                                   email EXACTO: la API busca
+                                                   por coincidencia parcial)
+       GET   /api/reservas/<id>                    detalle
+       PATCH /api/reservas/<id>                    {"campo", "valor"}
+       POST  /api/reservas/<id>/cancelar           {"motivo"} -> {"reserva",
+                                                   "promovida"}
+
+     IDS QUE USA EL JS (no cambiarlos sin avisar):
+       #form-buscar, #buscar-email ........ búsqueda por email
+       #mensaje ........................... resultado de cada acción (igual que
+                                            en reservar.html: mensaje-exito,
+                                            mensaje-aviso o mensaje-error)
+       #resultados, #lista-reservas,
+       #sin-resultados .................... listado de reservas encontradas
+       #detalle, #detalle-id, #detalle-complejo, #detalle-fecha,
+       #detalle-hora, #detalle-jugadores, #detalle-comentarios,
+       #detalle-estado .................... detalle de la reserva elegida
+       #form-jugadores, #nuevos-jugadores . PATCH campo "jugadores"
+       #form-comentarios, #nuevos-comentarios  PATCH campo "comentarios"
+       #form-cancelar, #motivo ............ POST .../cancelar
+       #volver-listado .................... vuelve del detalle al listado
+     Las secciones arrancan con el atributo hidden: el JS las muestra cuando
+     tienen datos (elemento.hidden = false).
+     ========================================================================= -->
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- [GUS] meta author -->
+  <meta name="author" content="Federico Cabrera">
+  <meta name="description" content="Consultá, modificá o cancelá tus reservas de CanchaYa.">
+  <title>Mis reservas — CanchaYa</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/estilos.css">
+</head>
+
+<body>
+
+  <!-- [FED] HEADER común -->
+  <header class="cabecera">
+    <div class="contenedor">
+      <a href="index.html" class="logo">Cancha<span>Ya</span></a>
+      <button class="hamburguesa" aria-label="Abrir menú">&#9776;</button>
+      <nav>
+        <ul class="menu">
+          <li><a href="index.html">Inicio</a></li>
+          <li><a href="complejos.html">Complejos</a></li>
+          <li><a href="reservar.html">Reservar</a></li>
+          <li><a href="mis-reservas.html" class="activo">Mis reservas</a></li>
+          <li><a href="nosotros.html">Nosotros</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="encabezado-pagina">
+      <div class="contenedor">
+        <h1>Mis <span>reservas</span></h1>
+        <p>Ingresá el email con el que reservaste para ver, modificar o cancelar tus turnos.</p>
+      </div>
+    </section>
+
+    <section class="contenedor">
+      <!-- [FED] 1) BÚSQUEDA POR EMAIL. type=email + required: el navegador
+           valida el formato antes de que el JS haga el pedido. -->
+      <form id="form-buscar" class="formulario" action="#" method="get">
+        <div class="campo">
+          <label for="buscar-email">Email de la reserva</label>
+          <input type="email" id="buscar-email" name="email"
+                 placeholder="vos@ejemplo.com" required>
+        </div>
+        <button type="submit" class="boton boton-primario">Buscar mis reservas</button>
+
+        <!-- Resultado de cada acción. role="status" hace que los lectores de
+             pantalla lo anuncien cuando cambia. -->
+        <div id="mensaje" class="mensaje" role="status" hidden></div>
+      </form>
+
+      <!-- [FED] 2) LISTADO. El JS agrega un <li class="item-reserva"> por cada
+           reserva, con un botón "Ver detalle" que lleva data-id="<id>". -->
+      <div id="resultados" class="formulario" hidden>
+        <h2 class="titulo-seccion">Reservas encontradas</h2>
+        <ul id="lista-reservas" class="lista-reservas"></ul>
+        <p id="sin-resultados" class="texto-suave" hidden>
+          No encontramos reservas con ese email.
+        </p>
+      </div>
+
+      <!-- [FED] 3) DETALLE de una reserva, con las acciones permitidas.
+           Solo se pueden cambiar los jugadores y los comentarios: para cambiar
+           de horario hay que cancelar y reservar de nuevo (igual que en la
+           consola, ver estructuras.modificar_reserva). -->
+      <div id="detalle" class="formulario" hidden>
+        <h2 class="titulo-seccion">Reserva <span id="detalle-id"></span></h2>
+        <dl class="detalle-reserva">
+          <dt>Complejo</dt>    <dd id="detalle-complejo"></dd>
+          <dt>Fecha</dt>       <dd id="detalle-fecha"></dd>
+          <dt>Horario</dt>     <dd id="detalle-hora"></dd>
+          <dt>Jugadores</dt>   <dd id="detalle-jugadores"></dd>
+          <dt>Comentarios</dt> <dd id="detalle-comentarios"></dd>
+          <dt>Estado</dt>      <dd id="detalle-estado"></dd>
+        </dl>
+
+        <!-- PATCH /api/reservas/<id> con {"campo": "jugadores", "valor": n}.
+             min/max = MIN_JUGADORES y MAX_JUGADORES de estructuras.py. -->
+        <form id="form-jugadores" action="#" method="post">
+          <div class="campo">
+            <label for="nuevos-jugadores">Cambiar cantidad de jugadores</label>
+            <input type="number" id="nuevos-jugadores" name="jugadores"
+                   min="2" max="14" required>
+          </div>
+          <button type="submit" class="boton boton-secundario">Guardar jugadores</button>
+        </form>
+
+        <!-- PATCH /api/reservas/<id> con {"campo": "comentarios", "valor": texto}. -->
+        <form id="form-comentarios" action="#" method="post">
+          <div class="campo">
+            <label for="nuevos-comentarios">Cambiar comentarios</label>
+            <textarea id="nuevos-comentarios" name="comentarios" rows="2"
+                      placeholder="Ej: necesitamos pecheras"></textarea>
+          </div>
+          <button type="submit" class="boton boton-secundario">Guardar comentarios</button>
+        </form>
+
+        <!-- POST /api/reservas/<id>/cancelar con {"motivo": texto}. La API exige
+             al menos 3 caracteres (utils.es_texto_valido). Si había alguien en
+             la lista de espera, la respuesta trae "promovida" y el JS lo avisa. -->
+        <form id="form-cancelar" action="#" method="post">
+          <div class="campo">
+            <label for="motivo">Motivo de la cancelación</label>
+            <textarea id="motivo" name="motivo" rows="2" required minlength="3"
+                      placeholder="Ej: se suspendió el partido"></textarea>
+          </div>
+          <button type="submit" class="boton boton-primario">Cancelar reserva</button>
+        </form>
+
+        <button type="button" id="volver-listado" class="boton boton-secundario">
+          Volver al listado
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- [FED] FOOTER común -->
+  <footer class="pie">
+    <div class="contenedor">
+      <span>© 2026 CanchaYa — Proyecto académico ficticio.</span>
+      <span>Práctica Profesional I — Instituto Superior Manuel Belgrano</span>
+    </div>
+  </footer>
+
+  <script src="js/menu.js"></script>
+  <!-- [LEA] comun.js: pedidos a la API y mensajes, compartido con reservar.html. -->
+  <script src="js/comun.js"></script>
+  <!-- [LEA] Lógica de la página (búsqueda, detalle, modificar y cancelar). -->
+  <script src="js/mis-reservas.js"></script>
+</body>
+</html>

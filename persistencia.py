@@ -14,6 +14,7 @@ RUTA_COMPLEJOS = os.path.join(CARPETA_DATOS, "complejos.json")
 RUTA_RESERVAS = os.path.join(CARPETA_DATOS, "reservas.json")
 RUTA_LOG = os.path.join(CARPETA_DATOS, "log_operaciones.txt")
 RUTA_GRAFICO = os.path.join(CARPETA_GRAFICOS, "ocupacion.png")
+RUTA_GRAFICO_INGRESOS = os.path.join(CARPETA_GRAFICOS,"ingresos.png")
 RUTA_BD = os.path.join(CARPETA_DATOS, "canchaya.db")
 TABLAS = {
     RUTA_COMPLEJOS: "complejos",
@@ -216,6 +217,7 @@ def escribir_json(ruta, datos):
             os.makedirs(carpeta, exist_ok=True)
         with open(ruta, "w", encoding="utf-8") as archivo:
             json.dump(datos, archivo, ensure_ascii=False, indent=2)
+            archivo.write("\n")
         return True
     except (IOError, OSError):
         return False
