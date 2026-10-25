@@ -540,3 +540,48 @@ Estadio 5 y La Redonda, y pasan los 37 tests.
 **Modificaciones:** No se hicieron modificaciones a lo generado por claude. 
 
 **Estado:** Quedo pendiente de aprobacion: con numero de pr# 9
+
+---
+
+**Fecha:** 24/10/2026 | **Herramienta:** Claude (Claude Code) | **Integrante:** Leandro Licata
+
+**Prompt:** "Arranquemos", como respuesta a la propuesta de seguir con `js/mis-reservas.js`,
+la parte del frontend que me tocaba en el plan del Hito 2.
+
+**Resultado:** La IA leyó `mis-reservas.html`, que había hecho Federico con los ids
+documentados, y los endpoints de `api.py`. Generó:
+
+- `js/mis-reservas.js`: busca las reservas por email, muestra el detalle, cambia los
+  jugadores o los comentarios y cancela con motivo, usando los cuatro endpoints que ninguna
+  página consumía (`GET /api/reservas`, `GET /api/reservas/<id>`, `PATCH` y `.../cancelar`).
+- `js/comun.js`: `pedirApi()`, `mostrarMensaje()`, `API_URL` y `SIN_CONEXION` estaban en
+  `reservar.js`. En vez de copiarlas, las pasó a un archivo que cargan las dos páginas, y
+  sumó `enviarJson()` para no repetir las opciones de `fetch`. `reservar.js` quedó sin esas
+  funciones y con los comentarios renumerados. Las dos páginas cargan `comun.js`; en la de
+  Federico la línea va marcada `[LEA]`.
+
+**Decisiones de diseño que hay que poder explicar en la defensa:**
+
+- La API busca el email por coincidencia parcial, así que la página deja solo las reservas
+  cuyo email es exactamente el ingresado, sin distinguir mayúsculas. Si no, buscando
+  "paz@ejemplo.com" aparecían las de Carolina Paz.
+- Al cancelar, si había alguien en la lista de espera, el mensaje dice que el turno pasó al
+  primero de la cola, pero no quién es, porque son los datos de otro cliente.
+- Una reserva cancelada muestra el motivo y oculta las acciones, porque la API ya no deja
+  modificarla.
+
+**Problema encontrado:** al probar, en el puerto 5000 respondía otra aplicación mía de otro
+proyecto (`app.py`), no la API de CanchaYa. La IA lo detectó porque los complejos tenían
+campos que nuestro backend no usa, y levantó la prueba en el puerto 5001.
+
+**Verificación:** con una copia del proyecto y Chrome headless se recorrieron los dos flujos.
+En Mis reservas: email parcial sin resultados, email exacto con mayúsculas y espacios,
+detalle, cambio de jugadores, error de la API con 30 jugadores, comentarios, cancelación y
+vuelta al listado. Al cancelar la #14, la #15 pasó a confirmada y la #16 siguió en espera.
+En Reservar, después del cambio a `comun.js`: carga de complejos, reserva confirmada y 409
+con el botón de lista de espera. Después lo probé yo con el navegador y la API levantada.
+
+**Modificaciones:** No hice modificaciones. Lo probé manualmente, revisé el código y
+todo está correcto.
+
+**Estado:** usado tal cual, en la rama `feat/mis-reservas-js` (commit `87c44f2`).
