@@ -296,10 +296,9 @@ con datos inválidos antes del válido. Comprobó con el árbol sintáctico que 
 funciones tengan docstring y que ninguna supere las 40 líneas (la más larga tiene 25).
 No probó el módulo integrado con `main.py`.
 
-**Modificaciones:** _(completar: qué cambié al leer y probar el código, y por qué. Por
-ejemplo, si ajusté los nombres de las claves según `CONTRATO_MODULOS.md`.)_
+**Modificaciones:** No modifiqué el código generado. El supuesto sobre las claves de la reserva falló en una: la IA usó `cliente` y el contrato define `nombre_cliente`. Lo detectó Leandro al probar el programa con reservas cargadas, porque `formatear_reserva()` y `fila_csv()` cortaban con `KeyError` en las opciones 3, 4, 5 y 7. Él corrigió las dos líneas y la cabecera del archivo (commit `4a30179`). El resto de las claves supuestas (`id_complejo`, `fecha`, `hora`, `estado`, `id` y `nombre`) coincidían con el contrato.
 
-**Estado:** _(completar: en uso / modificado parcialmente, y el commit donde quedó.)_
+**Estado:** En uso, con esa corrección de dos líneas. Las diez funciones quedaron como las generó la IA. Leandro agregó después en este módulo, marcadas con `[LEA]`, `buscar_complejo()`, `es_texto_valido()`, `es_entero_en_rango()`, `validar_reserva()` y `validar_modificacion()` para la API, y `_nombre_complejo()` pasó a usar `buscar_complejo()`. Commits `12cddf0` y `4a30179`.
 
 
 ---
@@ -634,9 +633,9 @@ y `ingresos_por_complejo()` usando `utils.buscar_complejo()`. Mantiene el import
 matplotlib dentro de la función, devuelve `False` si no hay datos o si falla el guardado,
 y cierra la figura con `finally`.
 
-**Modificaciones:** _(completar)_
+**Modificaciones:** No cambié la lógica generada. Revisé que graficar_barras() sea la única función que importa matplotlib, que graficar_ocupacion() mantenga su firma y que ingresos_por_complejo() use utils.buscar_complejo() en lugar de `buscar_complejo_por_id()`, que se eliminó.
 
-**Estado:** _(completar)_
+**Estado:** En uso. En la opción 6 del menú se generan los dos PNG, el de ocupación y el de ingresos (PR #17). Commits `61406d2` y `fde51da`; el merge `94ae4c1` resolvió los conflictos con `main`.
 
 ---
 
@@ -651,6 +650,6 @@ cuatro), ingresos solo de confirmadas, ranking ordenado, ocupación con todos lo
 `graficar_barras()` con datos vacíos, más la función auxiliar `armar_reserva()`. El test
 del gráfico usa `tmp_path` para no escribir en el repo.
 
-**Modificaciones:** _(completar)_
+**Modificaciones:** No hice modificaciones. Corrí `python -m pytest` y los 6 tests pasan.
 
-**Estado:** _(completar)_
+**Estado:** En uso, sin modificaciones en la lógica generada. Los 6 tests de estadísticas pasan dentro de la suite completa, que ahora tiene 43 (antes 37). Commit `1b1bab8`.
